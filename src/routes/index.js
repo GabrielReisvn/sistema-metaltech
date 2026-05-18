@@ -6,7 +6,7 @@ const auth     = require('../middlewares/auth');
 
 // importando modelos
 const Usuario  = require('../models/Usuario');
-const Pizza    = require('../models/Pizza');
+const Pizza    = require('../models/Produto');
 const Cliente  = require('../models/Cliente');
 const Pedido   = require('../models/Pedido');
 // autentificação de usuario
@@ -32,22 +32,22 @@ router.post('/auth/login', async (req, res) => {
 });
 
 // Rotas de pizzas
-router.get('/pizzas', auth, async (req, res) => {
+router.get('/produto', auth, async (req, res) => {
   try { res.json(await Pizza.findAll()); }
   catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
 // rota para buscar pizza por ID
-router.get('/pizzas/:id', auth, async (req, res) => {
+router.get('/produto/:id', auth, async (req, res) => {
   try {
     const p = await Pizza.findById(req.params.id);
-    if (!p) return res.status(404).json({ erro: 'Pizza não encontrada' });
+    if (!p) return res.status(404).json({ erro: 'produto não encontrada' });
     res.json(p);
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
 // rota para criar uma nova pizza
-router.post('/pizzas', auth, async (req, res) => {
+router.post('/produto', auth, async (req, res) => {
   try {
     if (!req.body.nome || !req.body.ingredientes)
       return res.status(400).json({ erro: 'Nome e ingredientes são obrigatórios' });

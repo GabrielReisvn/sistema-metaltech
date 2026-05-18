@@ -1,58 +1,60 @@
-// acesso ao banco de dados SQLite e funções auxiliares para manipulação dos dados
 const { ready, query, run, get } = require('../database/sqlite');
 
-// Função auxiliar para formatar os dados do banco no formato esperado pela API, convertendo o campo de endereço de JSON string para objeto
+// Converte linha do banco para o formato da API
+// endereco é salvo como JSON string no banco
 function formatarCliente(row) {
   if (!row) return null;
   return {
-    _id:        row.id,
-    id:         row.id,
-    nome:       row.nome,
-    telefone:   row.telefone,
-    endereco:   JSON.parse(row.endereco || '{}'),
+    id:          row.id,
+    nome:        row.nome,
+    cnpjCpf:     row.cnpj_cpf,
+    telefone:    row.telefone,
+    email:       row.email,
+    endereco:    JSON.parse(row.endereco || '{}'),
     observacoes: row.observacoes,
-    ativo:      row.ativo === 1,
-    createdAt:  row.created_at,
-    updatedAt:  row.updated_at,
+    ativo:       row.ativo === 1,
+    createdAt:   row.created_at,
+    updatedAt:   row.updated_at,
   };
 }
 
-// OBJETO DE MODELO DE CLIENTE COM MÉTODOS PARA CRUD E CONSULTAS ESPECÍFICAS
 const Cliente = {
 
+  // Lista clientes ativos — aceita busca por nome, cnpj_cpf ou telefone
   async findAll(busca = '') {
     await ready;
-    let rows;
     if (busca) {
       const t = `%${busca}%`;
-      rows = query(
-        'SELECT * FROM clientes WHERE ativo = 1 AND (nome LIKE ? OR telefone LIKE ?) ORDER BY nome',
-        [t, t]
-      );
-    } else {
-      rows = query('SELECT * FROM clientes WHERE ativo = 1 ORDER BY nome');
+      return query(
+        `SELECT * FROM clientes
+          WHERE ativo = 1
+            AND (nome LIKE ? OR cnpj_cpf LIKE ? OR telefone LIKE ?)
+          ORDER BY nome`,
+        [t, t, t]
+      ).map(formatarCliente);
     }
-    return rows.map(formatarCliente);
+    return query('SELECT * FROM clientes WHERE ativo = 1 ORDER BY nome').map(formatarCliente);
   },
 
-  
   async findById(id) {
     await ready;
     return formatarCliente(get('SELECT * FROM clientes WHERE id = ?', [id]));
   },
 
-  // Cria um novo cliente com os dados fornecidos, convertendo o campo de endereço para JSON string antes de inserir no banco
-  async create({ nome, telefone, endereco = {}, observacoes = '' }) {
+  // Cria um novo cliente — cnpj_cpf é obrigatório e único
+  async create({ nome, cnpjCpf, telefone = '', email = '', endereco = {}, observacoes = '' }) {
     await ready;
     const info = run(
-      'INSERT INTO clientes (nome, telefone, endereco, observacoes) VALUES (?, ?, ?, ?)',
-      [nome.trim(), telefone.trim(), JSON.stringify(endereco), observacoes]
+      `INSERT INTO clientes (nome, cnpj_cpf, telefone, email, endereco, observacoes)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [nome.trim(), cnpjCpf.trim(), telefone.trim(), email.trim(),
+       JSON.stringify(endereco), observacoes]
     );
     return this.findById(info.lastInsertRowid);
   },
 
-  // Atualiza um cliente existente com os dados fornecidos, convertendo o campo de endereço para JSON string antes de atualizar no banco
-  async update(id, { nome, telefone, endereco, observacoes, ativo }) {
+  // Atualiza apenas os campos enviados (patch parcial)
+  async update(id, { nome, cnpjCpf, telefone, email, endereco, observacoes, ativo }) {
     await ready;
     const atual = get('SELECT * FROM clientes WHERE id = ?', [id]);
     if (!atual) return null;
@@ -63,7 +65,9 @@ const Cliente = {
     run(`
       UPDATE clientes SET
         nome        = ?,
+        cnpj_cpf    = ?,
         telefone    = ?,
+        email       = ?,
         endereco    = ?,
         observacoes = ?,
         ativo       = ?,
@@ -71,23 +75,27 @@ const Cliente = {
       WHERE id = ?
     `, [
       nome        ?? atual.nome,
+      cnpjCpf     ?? atual.cnpj_cpf,
       telefone    ?? atual.telefone,
+      email       ?? atual.email,
       JSON.stringify(endFinal),
       observacoes ?? atual.observacoes,
       ativo !== undefined ? (ativo ? 1 : 0) : atual.ativo,
-      id
+      id,
     ]);
 
     return this.findById(id);
   },
 
-  // Deleta um cliente (na verdade, marca como inativo), retornando true se o cliente foi deletado ou false se o cliente não for encontrado
+  // Soft delete — marca como inativo, preserva histórico de ordens
   async delete(id) {
     await ready;
-    const info = run('DELETE FROM clientes WHERE id = ?', [id]);
+    const info = run(
+      "UPDATE clientes SET ativo = 0, updated_at = datetime('now') WHERE id = ?",
+      [id]
+    );
     return info.changes > 0;
   },
 };
 
-// EXPORTANDO O MODELO DE CLIENTE PARA USO NAS ROTAS E OUTRAS PARTES DO SISTEMA
 module.exports = Cliente;
