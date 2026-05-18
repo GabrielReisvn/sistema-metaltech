@@ -1,85 +1,122 @@
-// desportando dependencias
-const express  = require('express');
-const jwt      = require('jsonwebtoken');
-const router   = express.Router();
-const auth     = require('../middlewares/auth');
+const express       = require('express');
+const jwt           = require('jsonwebtoken');
+const router        = express.Router();
+const auth          = require('../middlewares/auth');
 
-// importando modelos
-const Usuario  = require('../models/Usuario');
-const Pizza    = require('../models/Produto');
-const Cliente  = require('../models/Cliente');
-const Pedido   = require('../models/Pedido');
-// autentificação de usuario
+// ----------------------------------------------------------------
+// IMPORTS CORRETOS DOS MODELS
+// ----------------------------------------------------------------
+const Usuario       = require('../models/Usuario');
+const Produto       = require('../models/Produto');
+const Cliente       = require('../models/Cliente');
+const OrdemProducao = require('../models/OrdemProducao');
+
+// ================================================================
+// AUTH
+// ================================================================
+
+// POST /auth/login — autentica usuário e retorna token JWT (8h)
 router.post('/auth/login', async (req, res) => {
   try {
     const { email, senha } = req.body;
-    if (!email || !senha) return res.status(400).json({ erro: 'E-mail e senha são obrigatórios' });
+    if (!email || !senha)
+      return res.status(400).json({ erro: 'E-mail e senha são obrigatórios' });
 
     const usuario = await Usuario.findByEmail(email);
-    if (!usuario) return res.status(401).json({ erro: 'Credenciais inválidas' });
+    if (!usuario)
+      return res.status(401).json({ erro: 'Credenciais inválidas' });
 
     const ok = await Usuario.verificarSenha(senha, usuario.senha);
-    if (!ok) return res.status(401).json({ erro: 'Credenciais inválidas' });
+    if (!ok)
+      return res.status(401).json({ erro: 'Credenciais inválidas' });
 
-    const token = jwt.sign(
-      { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil: usuario.perfil },
-      process.env.JWT_SECRET,
-      { expiresIn: '8h' }
-    ); // Gerar token JWT com informações do usuário e expiração de 8 horas
+    if (!usuario.ativo)
+      return res.status(403).json({ erro: 'Usuário inativo. Contate o administrador.' });
 
-    res.json({ token, usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil: usuario.perfil } });
+    const payload = { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil: usuario.perfil };
+    const token   = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '8h' });
+
+    res.json({ token, usuario: payload });
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// Rotas de pizzas
-router.get('/produto', auth, async (req, res) => {
-  try { res.json(await Pizza.findAll()); }
-  catch (e) { res.status(500).json({ erro: e.message }); }
+// ================================================================
+// PRODUTOS (peças industriais)
+// ================================================================
+
+// GET /produtos — lista produtos; aceita ?categoria= e ?apenasDisponiveis=true
+router.get('/produtos', auth, async (req, res) => {
+  try {
+    const filtros = {
+      categoria:        req.query.categoria,
+      apenasDisponiveis: req.query.apenasDisponiveis === 'true',
+    };
+    res.json(await Produto.findAll(filtros));
+  } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// rota para buscar pizza por ID
-router.get('/produto/:id', auth, async (req, res) => {
+// GET /produtos/:id
+router.get('/produtos/:id', auth, async (req, res) => {
   try {
-    const p = await Pizza.findById(req.params.id);
-    if (!p) return res.status(404).json({ erro: 'produto não encontrada' });
+    const p = await Produto.findById(req.params.id);
+    if (!p) return res.status(404).json({ erro: 'Produto não encontrado' });
     res.json(p);
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// rota para criar uma nova pizza
-router.post('/produto', auth, async (req, res) => {
+// POST /produtos — somente Gerente pode cadastrar peças
+router.post('/produtos', auth, async (req, res) => {
   try {
-    if (!req.body.nome || !req.body.ingredientes)
-      return res.status(400).json({ erro: 'Nome e ingredientes são obrigatórios' });
-    res.status(201).json(await Pizza.create(req.body));
-  } catch (e) { res.status(500).json({ erro: e.message }); }
+    if (req.usuario.perfil !== 'Gerente')
+      return res.status(403).json({ erro: 'Acesso restrito a Gerentes' });
+
+    const { nome, codigo } = req.body;
+    if (!nome || !codigo)
+      return res.status(400).json({ erro: 'Nome e código são obrigatórios' });
+
+    res.status(201).json(await Produto.create(req.body));
+  } catch (e) {
+    if (e.message?.includes('UNIQUE'))
+      return res.status(400).json({ erro: 'Código de produto já cadastrado' });
+    res.status(500).json({ erro: e.message });
+  }
 });
 
-// rota para atualizar pizza
-router.put('/pizzas/:id', auth, async (req, res) => {
+// PUT /produtos/:id — somente Gerente
+router.put('/produtos/:id', auth, async (req, res) => {
   try {
-    const p = await Pizza.update(req.params.id, req.body);
-    if (!p) return res.status(404).json({ erro: 'Pizza não encontrada' });
+    if (req.usuario.perfil !== 'Gerente')
+      return res.status(403).json({ erro: 'Acesso restrito a Gerentes' });
+
+    const p = await Produto.update(req.params.id, req.body);
+    if (!p) return res.status(404).json({ erro: 'Produto não encontrado' });
     res.json(p);
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// rota de exclusão de pizza (marcar como indisponível)
-router.delete('/pizzas/:id', auth, async (req, res) => {
+// DELETE /produtos/:id — soft delete, marca como indisponível
+router.delete('/produtos/:id', auth, async (req, res) => {
   try {
-    const ok = await Pizza.delete(req.params.id);
-    if (!ok) return res.status(404).json({ erro: 'Pizza não encontrada' });
-    res.json({ mensagem: 'Pizza deletada' });
+    if (req.usuario.perfil !== 'Gerente')
+      return res.status(403).json({ erro: 'Acesso restrito a Gerentes' });
+
+    const ok = await Produto.delete(req.params.id);
+    if (!ok) return res.status(404).json({ erro: 'Produto não encontrado' });
+    res.json({ mensagem: 'Produto marcado como indisponível' });
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// Rotas de clientes
+// ================================================================
+// CLIENTES
+// ================================================================
+
+// GET /clientes — aceita ?busca=texto (nome, cnpj ou telefone)
 router.get('/clientes', auth, async (req, res) => {
   try { res.json(await Cliente.findAll(req.query.busca)); }
   catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// rota para buscar cliente por ID
+// GET /clientes/:id
 router.get('/clientes/:id', auth, async (req, res) => {
   try {
     const c = await Cliente.findById(req.params.id);
@@ -88,16 +125,22 @@ router.get('/clientes/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// rota para criar um novo cliente
+// POST /clientes
 router.post('/clientes', auth, async (req, res) => {
   try {
-    if (!req.body.nome || !req.body.telefone)
-      return res.status(400).json({ erro: 'Nome e telefone são obrigatórios' });
+    const { nome, cnpjCpf } = req.body;
+    if (!nome || !cnpjCpf)
+      return res.status(400).json({ erro: 'Nome e CNPJ/CPF são obrigatórios' });
+
     res.status(201).json(await Cliente.create(req.body));
-  } catch (e) { res.status(500).json({ erro: e.message }); }
+  } catch (e) {
+    if (e.message?.includes('UNIQUE'))
+      return res.status(400).json({ erro: 'CNPJ/CPF já cadastrado' });
+    res.status(500).json({ erro: e.message });
+  }
 });
 
-// rota para atualizar cliente
+// PUT /clientes/:id
 router.put('/clientes/:id', auth, async (req, res) => {
   try {
     const c = await Cliente.update(req.params.id, req.body);
@@ -106,118 +149,163 @@ router.put('/clientes/:id', auth, async (req, res) => {
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// rota de exclusão cliente (marcar como inativo) 
+// DELETE /clientes/:id — soft delete
 router.delete('/clientes/:id', auth, async (req, res) => {
   try {
     const ok = await Cliente.delete(req.params.id);
     if (!ok) return res.status(404).json({ erro: 'Cliente não encontrado' });
-    res.json({ mensagem: 'Cliente deletado' });
+    res.json({ mensagem: 'Cliente desativado' });
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// Rotas de pedidos 
-router.get('/pedidos', auth, async (req, res) => {
+// ================================================================
+// ORDENS DE PRODUÇÃO
+// ================================================================
+
+// GET /ordens — aceita ?liderId= e ?status=
+router.get('/ordens', auth, async (req, res) => {
   try {
     const filtros = {};
-    if (req.query.garcom) filtros.garcomId = req.query.garcom;
-    res.json(await Pedido.findAll(filtros)); 
+    // Líder só vê as próprias ordens; Gerente vê todas (ou filtra por liderId)
+    if (req.usuario.perfil === 'Lider') {
+      filtros.liderId = req.usuario.id;
+    } else if (req.query.liderId) {
+      filtros.liderId = req.query.liderId;
+    }
+    if (req.query.status) filtros.status = req.query.status;
+
+    res.json(await OrdemProducao.findAll(filtros));
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// rota para buscar pedido por ID
-router.get('/pedidos/:id', auth, async (req, res) => {
+// GET /ordens/:id
+router.get('/ordens/:id', auth, async (req, res) => {
   try {
-    const p = await Pedido.findById(req.params.id);
-    if (!p) return res.status(404).json({ erro: 'Pedido não encontrado' });
-    res.json(p);
+    const o = await OrdemProducao.findById(req.params.id);
+    if (!o) return res.status(404).json({ erro: 'Ordem não encontrada' });
+    res.json(o);
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
-// rota para criar um novo pedido
-router.post('/pedidos', auth, async (req, res) => {
-  try {
-    const { cliente, itens, formaPagamento } = req.body;
-    if (!cliente || !itens?.length || !formaPagamento)
-      return res.status(400).json({ erro: 'cliente, itens e formaPagamento são obrigatórios' }); 
 
-    const novo = await Pedido.create({
-      clienteId:      cliente,
+// POST /ordens — cria nova ordem de produção
+router.post('/ordens', auth, async (req, res) => {
+  try {
+    const { clienteId, itens, prazoEntrega } = req.body;
+    if (!clienteId || !itens?.length || !prazoEntrega)
+      return res.status(400).json({ erro: 'clienteId, itens e prazoEntrega são obrigatórios' });
+
+    const nova = await OrdemProducao.create({
+      clienteId,
       itens,
-      taxaEntrega:    req.body.taxaEntrega,
-      formaPagamento,
-      troco:          req.body.troco,
-      observacoes:    req.body.observacoes,
-      mesa:           req.body.mesa,
-      origem:         req.body.origem,
-      garcomId:       req.body.garcom || req.usuario?.id,
-    }); // criando pedido com o usuário autenticado como garçom, se não for especificado
-    res.status(201).json(novo);
+      prazoEntrega,
+      prioridade:  req.body.prioridade,
+      observacoes: req.body.observacoes,
+      liderId:     req.body.liderId || req.usuario.id,
+    });
+    res.status(201).json(nova);
   } catch (e) { res.status(400).json({ erro: e.message }); }
 });
 
-// rota para atualizar status do pedido
-router.patch('/pedidos/:id/status', auth, async (req, res) => {
+// PATCH /ordens/:id/status — avança o status respeitando a máquina de estados
+// Fluxo: aguardando → em_producao → finalizado | cancelado
+router.patch('/ordens/:id/status', auth, async (req, res) => {
   try {
-    const validos = ['recebido','em_preparo','saiu_entrega','entregue','cancelado'];
-    if (!validos.includes(req.body.status))
-      return res.status(400).json({ erro: 'Status inválido' });
-    const p = await Pedido.updateStatus(req.params.id, req.body.status);
-    if (!p) return res.status(404).json({ erro: 'Pedido não encontrado' });
-    res.json(p);
+    const statusValidos = ['aguardando', 'em_producao', 'finalizado', 'cancelado'];
+    if (!statusValidos.includes(req.body.status))
+      return res.status(400).json({
+        erro: `Status inválido. Use: ${statusValidos.join(', ')}`,
+      });
+
+    const o = await OrdemProducao.updateStatus(req.params.id, req.body.status);
+    res.json(o);
+  } catch (e) {
+    // updateStatus lança erro descritivo para transição inválida ou ordem não encontrada
+    res.status(400).json({ erro: e.message });
+  }
+});
+
+// PATCH /ordens/:id/lider — atribui ou reatribui um líder à ordem (somente Gerente)
+router.patch('/ordens/:id/lider', auth, async (req, res) => {
+  try {
+    if (req.usuario.perfil !== 'Gerente')
+      return res.status(403).json({ erro: 'Acesso restrito a Gerentes' });
+
+    if (!req.body.liderId)
+      return res.status(400).json({ erro: 'liderId é obrigatório' });
+
+    const o = await OrdemProducao.atribuirLider(req.params.id, req.body.liderId);
+    if (!o) return res.status(404).json({ erro: 'Ordem não encontrada' });
+    res.json(o);
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// rota de exclusão de pedido (marcar como cancelado)
-router.delete('/pedidos/:id', auth, async (req, res) => {
+// DELETE /ordens/:id — só apaga ordens com status 'aguardando'
+router.delete('/ordens/:id', auth, async (req, res) => {
   try {
-    const ok = await Pedido.delete(req.params.id);
-    if (!ok) return res.status(404).json({ erro: 'Pedido não encontrado' });
-    res.json({ mensagem: 'Pedido deletado' });
-  } catch (e) { res.status(500).json({ erro: e.message }); }
+    if (req.usuario.perfil !== 'Gerente')
+      return res.status(403).json({ erro: 'Acesso restrito a Gerentes' });
+
+    const ok = await OrdemProducao.delete(req.params.id);
+    if (!ok) return res.status(404).json({ erro: 'Ordem não encontrada' });
+    res.json({ mensagem: 'Ordem removida' });
+  } catch (e) {
+    // delete lança erro descritivo se a ordem já passou de 'aguardando'
+    res.status(400).json({ erro: e.message });
+  }
 });
 
-// rotas de usuarios
+// ================================================================
+// USUÁRIOS — somente Gerente gerencia usuários
+// ================================================================
+
+// GET /usuarios
 router.get('/usuarios', auth, async (req, res) => {
   try {
-    if (req.usuario.perfil !== 'Administrador')
-      return res.status(403).json({ erro: 'Acesso restrito a Administradores' });
+    if (req.usuario.perfil !== 'Gerente')
+      return res.status(403).json({ erro: 'Acesso restrito a Gerentes' });
     res.json(await Usuario.findAll());
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// rota para identificar 
+// POST /usuarios
 router.post('/usuarios', auth, async (req, res) => {
   try {
-    if (req.usuario.perfil !== 'Administrador')
-      return res.status(403).json({ erro: 'Acesso restrito a Administradores' });
+    if (req.usuario.perfil !== 'Gerente')
+      return res.status(403).json({ erro: 'Acesso restrito a Gerentes' });
+
     const { nome, email, senha, perfil } = req.body;
     if (!nome || !email || !senha)
-      return res.status(400).json({ erro: 'Nome, email e senha são obrigatórios' });
+      return res.status(400).json({ erro: 'Nome, e-mail e senha são obrigatórios' });
+
     res.status(201).json(await Usuario.create({ nome, email, senha, perfil }));
   } catch (e) {
-    if (e.message?.includes('UNIQUE')) return res.status(400).json({ erro: 'E-mail já cadastrado' });
+    if (e.message?.includes('UNIQUE'))
+      return res.status(400).json({ erro: 'E-mail já cadastrado' });
     res.status(500).json({ erro: e.message });
   }
 });
 
-// rota  para atualizar usuario 
+// PUT /usuarios/:id
 router.put('/usuarios/:id', auth, async (req, res) => {
   try {
-    if (req.usuario.perfil !== 'Administrador')
-      return res.status(403).json({ erro: 'Acesso restrito a Administradores' });
+    if (req.usuario.perfil !== 'Gerente')
+      return res.status(403).json({ erro: 'Acesso restrito a Gerentes' });
+
     const u = await Usuario.update(req.params.id, req.body);
     if (!u) return res.status(404).json({ erro: 'Usuário não encontrado' });
     res.json(u);
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// Exclusão de usuário (marcar como inativo)
+// DELETE /usuarios/:id — soft delete
 router.delete('/usuarios/:id', auth, async (req, res) => {
   try {
-    if (req.usuario.perfil !== 'Administrador')
-      return res.status(403).json({ erro: 'Acesso restrito a Administradores' });
+    if (req.usuario.perfil !== 'Gerente')
+      return res.status(403).json({ erro: 'Acesso restrito a Gerentes' });
+
     const ok = await Usuario.delete(req.params.id);
     if (!ok) return res.status(404).json({ erro: 'Usuário não encontrado' });
-    res.json({ mensagem: 'Usuário deletado' });
+    res.json({ mensagem: 'Usuário desativado' });
   } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 

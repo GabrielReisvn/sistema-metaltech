@@ -1,112 +1,219 @@
-// modulos do node.js e acesssando banco de dados para popular com dados iniciais
 require('dotenv').config();
 const { ready, run, query } = require('./src/database/sqlite');
 const bcrypt = require('bcryptjs');
 
-// Limpando banco de dados para inserir dados iniciais
 async function seed() {
   try {
     await ready;
     console.log('🧹 Limpando banco...');
 
-    run('DELETE FROM itens_pedido');
-    run('DELETE FROM pedidos');
-    run('DELETE FROM pizzas');
+    // Apaga na ordem correta para respeitar as chaves estrangeiras
+    run('DELETE FROM movimentacoes_estoque');
+    run('DELETE FROM itens_ordem');
+    run('DELETE FROM ordens_producao');
+    run('DELETE FROM materias_primas');
+    run('DELETE FROM produtos');
     run('DELETE FROM clientes');
     run('DELETE FROM usuarios');
 
     try {
-      run("DELETE FROM sqlite_sequence WHERE name IN ('itens_pedido','pedidos','pizzas','clientes','usuarios')");
-    } catch(_) { }
+      run(`DELETE FROM sqlite_sequence WHERE name IN (
+        'movimentacoes_estoque','itens_ordem','ordens_producao',
+        'materias_primas','produtos','clientes','usuarios'
+      )`);
+    } catch (_) { /* tabela sqlite_sequence só existe após o primeiro INSERT */ }
 
     console.log('✅ Banco limpo');
 
-    const hash = await bcrypt.hash('123456', 10); // gerando hash da senha "123456" para os usuários iniciais
-    // hash é uma string criptografada que representa a senha original, garantindo segurança mesmo que o banco de dados seja comprometido
+    // ----------------------------------------------------------------
+    // USUÁRIOS
+    // Perfis: Gerente (web admin) | Lider (app mobile)
+    // ----------------------------------------------------------------
+    const hash = await bcrypt.hash('123456', 10);
 
-    //adicionando usuarios iniciais com email e senha padrão para cada perfil (admin, atendente e garçom)
     run('INSERT INTO usuarios (nome, email, senha, perfil) VALUES (?, ?, ?, ?)',
-      ['Administrador Master', 'admin@pizzaria.com', hash, 'Administrador']);
+      ['Carlos Mendonça', 'gerente@metaltech.com', hash, 'Gerente']);
     run('INSERT INTO usuarios (nome, email, senha, perfil) VALUES (?, ?, ?, ?)',
-      ['Atendente Oficial', 'atendente@pizzaria.com', hash, 'Atendente']);
+      ['João Aparecido', 'lider1@metaltech.com', hash, 'Lider']);
     run('INSERT INTO usuarios (nome, email, senha, perfil) VALUES (?, ?, ?, ?)',
-      ['Garcom Oficial', 'garcom@pizzaria.com', hash, 'Garcom']);
+      ['Marcos Vinícius', 'lider2@metaltech.com', hash, 'Lider']);
+    run('INSERT INTO usuarios (nome, email, senha, perfil) VALUES (?, ?, ?, ?)',
+      ['Rodrigo Ferraz', 'lider3@metaltech.com', hash, 'Lider']);
 
-    console.log('✅ 3 usuários criados');
+    console.log('✅ 4 usuários criados (1 Gerente, 3 Líderes)');
 
-    // Criando 20 clientes fictícios com nomes, telefones, endereços e observações variadas para popular a tabela de clientes
+    // ----------------------------------------------------------------
+    // CLIENTES (empresas industriais)
+    // ----------------------------------------------------------------
     const clientes = [
-      ['Lucas Ferreira Santos',   '11991234501', {rua:'Rua das Acácias',numero:'142',bairro:'Vila Madalena',cidade:'São Paulo',cep:'05435-000'}, 'Alérgico a glúten'],
-      ['Camila Rodrigues Lima',   '11991234502', {rua:'Av. Paulista',numero:'900',bairro:'Bela Vista',cidade:'São Paulo',cep:'01310-100'}, ''],
-      ['Rafael Oliveira Costa',   '11991234503', {rua:'Rua Oscar Freire',numero:'55',bairro:'Jardins',cidade:'São Paulo',cep:'01426-001'}, 'Prefere entrega após 19h'],
-      ['Isabela Martins Souza',   '11991234504', {rua:'Rua Consolação',numero:'310',bairro:'Consolação',cidade:'São Paulo',cep:'01302-000'}, ''],
-      ['Bruno Almeida Pereira',   '11991234505', {rua:'Rua Augusta',numero:'780',bairro:'Cerqueira César',cidade:'São Paulo',cep:'01304-001'}, 'Intolerante a lactose'],
-      ['Juliana Nascimento Dias', '11991234506', {rua:'Rua Haddock Lobo',numero:'220',bairro:'Jardim América',cidade:'São Paulo',cep:'01414-000'}, ''],
-      ['Thiago Carvalho Mendes',  '11991234507', {rua:'Alameda Santos',numero:'415',bairro:'Cerqueira César',cidade:'São Paulo',cep:'01419-000'}, 'Cliente VIP'],
-      ['Fernanda Gomes Ribeiro',  '11991234508', {rua:'Rua Fradique Coutinho',numero:'88',bairro:'Pinheiros',cidade:'São Paulo',cep:'05416-010'}, ''],
-      ['Diego Barbosa Freitas',   '11991234509', {rua:'Rua Wisard',numero:'305',bairro:'Vila Madalena',cidade:'São Paulo',cep:'05434-080'}, 'Sem cebola nos pedidos'],
-      ['Larissa Teixeira Moura',  '11991234510', {rua:'Rua Amauri',numero:'60',bairro:'Itaim Bibi',cidade:'São Paulo',cep:'01448-000'}, ''],
-      ['Matheus Cardoso Nunes',   '11991234511', {rua:'Rua Pamplona',numero:'1200',bairro:'Jardim Paulista',cidade:'São Paulo',cep:'01405-002'}, ''],
-      ['Patrícia Rocha Vieira',   '11991234512', {rua:'Av. Brigadeiro Faria Lima',numero:'2000',bairro:'Pinheiros',cidade:'São Paulo',cep:'01452-000'}, 'Prefere pagamento em dinheiro'],
-      ['Anderson Silva Campos',   '11991234513', {rua:'Rua Estados Unidos',numero:'175',bairro:'Jardim América',cidade:'São Paulo',cep:'01427-000'}, ''],
-      ['Natália Araújo Castro',   '11991234514', {rua:'Rua José Maria Lisboa',numero:'530',bairro:'Jardim Paulista',cidade:'São Paulo',cep:'01423-000'}, 'Vegetariana'],
-      ['Felipe Cunha Rezende',    '11991234515', {rua:'Rua Ministro Rocha Azevedo',numero:'72',bairro:'Cerqueira César',cidade:'São Paulo',cep:'01410-001'}, ''],
-      ['Vanessa Lopes Guimarães', '11991234516', {rua:'Rua Bela Cintra',numero:'450',bairro:'Consolação',cidade:'São Paulo',cep:'01415-000'}, 'Sem pimenta'],
-      ['Gustavo Pires Andrade',   '11991234517', {rua:'Rua da Consolação',numero:'1800',bairro:'Higienópolis',cidade:'São Paulo',cep:'01301-100'}, ''],
-      ['Aline Moreira Fonseca',   '11991234518', {rua:'Av. Higienópolis',numero:'618',bairro:'Higienópolis',cidade:'São Paulo',cep:'01238-001'}, 'Cliente frequente'],
-      ['Rodrigo Tavares Monteiro','11991234519', {rua:'Rua Itapeva',numero:'286',bairro:'Bela Vista',cidade:'São Paulo',cep:'01332-000'}, ''],
-      ['Carolina Batista Pinto',  '11991234520', {rua:'Rua Peixoto Gomide',numero:'1100',bairro:'Jardim Paulista',cidade:'São Paulo',cep:'01409-001'}, 'Prefere bordas recheadas'],
+      ['Construtora Almeida & Filhos',   '12.345.678/0001-90', '(11) 3322-1100', 'contato@almeidafilhos.com.br',   {rua:'Av. das Indústrias',numero:'1500',bairro:'Distrito Industrial',cidade:'São Paulo',cep:'04701-000'},    'Pedidos urgentes toda última semana do mês'],
+      ['Siderúrgica Nortão Ltda',         '23.456.789/0001-01', '(11) 4455-2200', 'compras@nortao.com.br',          {rua:'Rua do Ferro',numero:'300',bairro:'Parque Industrial',cidade:'Guarulhos',cep:'07140-000'},             ''],
+      ['Metalforte Indústria S.A.',        '34.567.890/0001-12', '(11) 5566-3300', 'suprimentos@metalforte.com.br', {rua:'Rod. Presidente Dutra',numero:'Km 221',bairro:'Cumbica',cidade:'Guarulhos',cep:'07230-000'},           'Requer certificado de qualidade em cada lote'],
+      ['Engepec Equipamentos',             '45.678.901/0001-23', '(19) 3344-4400', 'engepec@engepec.com.br',         {rua:'Av. João Jorge',numero:'900',bairro:'Jardim Conceição',cidade:'Campinas',cep:'13036-000'},             ''],
+      ['Hidráulica Sul Ltda',              '56.789.012/0001-34', '(11) 2233-5500', 'pedidos@hidraulicasul.com.br',   {rua:'Rua Tuiuti',numero:'440',bairro:'Vila Industrial',cidade:'São Paulo',cep:'03086-000'},                'Entrega somente às terças e quintas'],
+      ['Transportes Pesados Omega',        '67.890.123/0001-45', '(11) 9988-6600', 'manutencao@omega.com.br',        {rua:'Av. do Estado',numero:'6000',bairro:'Ipiranga',cidade:'São Paulo',cep:'04231-030'},                   'Cliente VIP — prioridade máxima'],
+      ['Agro Maquinas do Cerrado',         '78.901.234/0001-56', '(64) 3322-7700', 'compras@agrocerrado.com.br',     {rua:'Rua Goiás',numero:'150',bairro:'Centro',cidade:'Rio Verde',cep:'75900-000'},                         'Prazo de entrega crítico — safra'],
+      ['Mineração Pico Alto',              '89.012.345/0001-67', '(31) 3211-8800', 'suprimentos@picoalto.com.br',   {rua:'Rod. BR-040',numero:'Km 512',bairro:'Zona Industrial',cidade:'Belo Horizonte',cep:'30620-000'},        ''],
+      ['Frigorífico Central Oeste',        '90.123.456/0001-78', '(67) 3344-9900', 'manut@fricocentraloeste.com.br', {rua:'Av. Filinto Müller',numero:'1800',bairro:'Carandá Bosque',cidade:'Campo Grande',cep:'79032-000'},     'Peças em aço inox obrigatório'],
+      ['Porto Seco Logística',             '01.234.567/0001-89', '(13) 3455-0011', 'operacoes@portoseco.com.br',     {rua:'Av. Portuária',numero:'200',bairro:'Macuco',cidade:'Santos',cep:'11015-000'},                        ''],
     ];
 
-    // Inserindo os clientes no banco de dados, convertendo o campo de endereço para JSON string antes de inserir
-    for (const [nome, tel, end, obs] of clientes) {
-      run('INSERT INTO clientes (nome, telefone, endereco, observacoes) VALUES (?, ?, ?, ?)',
-        [nome, tel, JSON.stringify(end), obs]);
+    for (const [nome, cnpj, tel, email, end, obs] of clientes) {
+      run('INSERT INTO clientes (nome, cnpj_cpf, telefone, email, endereco, observacoes) VALUES (?, ?, ?, ?, ?, ?)',
+        [nome, cnpj, tel, email, JSON.stringify(end), obs]);
     }
-    console.log('✅ 20 clientes criados');
+    console.log('✅ 10 clientes criados');
 
-    // Criando 20 pizzas fictícias com nomes, descrições, ingredientes, preços por tamanho e categorias variadas para popular a tabela de pizzas
-    const pizzas = [
-      ['Calabresa','Clássica brasileira, presença garantida em qualquer mesa','Calabresa fatiada, cebola e azeitona',{P:35,M:45,G:55},'tradicional'],
-      ['Margherita','A tradição italiana em cada fatia','Molho de tomate, mussarela e manjericão fresco',{P:34,M:44,G:54},'tradicional'],
-      ['Portuguesa','Farta e completa, agrada a todos','Presunto, ovo, cebola, azeitona e pimentão',{P:38,M:48,G:58},'tradicional'],
-      ['Napolitana','Simples, leve e deliciosa','Tomate, mussarela, alho e orégano',{P:33,M:43,G:53},'tradicional'],
-      ['Muçarela','A base de tudo, perfeita em sua simplicidade','Molho de tomate e mussarela',{P:30,M:40,G:50},'tradicional'],
-      ['Frango com Catupiry','Uma das mais pedidas da casa','Frango desfiado temperado e catupiry original',{P:38,M:48,G:58},'especial'],
-      ['Baiana','Para quem gosta de um toque picante','Calabresa moída, cebola e pimenta dedo-de-moça',{P:37,M:47,G:57},'especial'],
-      ['Atum','Sabor marcante e diferenciado','Atum em lascas, cebola roxa e azeitona preta',{P:40,M:50,G:60},'especial'],
-      ['Vegetariana','Colorida, saudável e cheia de sabor','Abobrinha, cenoura, brócolis, pimentão e tomate cereja',{P:36,M:46,G:56},'especial'],
-      ['Pepperoni','Estilo americano com muito pepperoni crocante','Pepperoni fatiado, mussarela e orégano',{P:41,M:51,G:61},'especial'],
-      ['Frango com Bacon','Combinação irresistível de sabores defumados','Frango desfiado, bacon crocante, catupiry e milho',{P:42,M:52,G:62},'especial'],
-      ['Camarão','Sabor do mar com toque especial da casa','Camarão ao alho e óleo, catupiry e salsa',{P:52,M:65,G:78},'especial'],
-      ['Quatro Queijos','Para os verdadeiros apaixonados por queijo','Mussarela, provolone, gorgonzola e parmesão',{P:44,M:56,G:68},'premium'],
-      ['Salmão com Cream Cheese','Sofisticada e surpreendente','Salmão defumado, cream cheese, alcaparras e endro',{P:58,M:72,G:86},'premium'],
-      ['Trufada com Cogumelos','Alta gastronomia em formato de pizza','Funghi porcini, cogumelo Paris, azeite trufado e parmesão',{P:62,M:78,G:94},'premium'],
-      ['Filet Mignon com Gorgonzola','Requinte e sabor em cada pedaço','Medalhão de filé mignon, gorgonzola, rúcula e redução de vinho tinto',{P:68,M:85,G:102},'premium'],
-      ['Burrata com Prosciutto','A escolha dos que apreciam o fino','Burrata fresca, prosciutto di Parma, rúcula e mel de trufa',{P:65,M:82,G:98},'premium'],
-      ['Camarão VIP','Nossa pizza mais requintada de frutos do mar','Camarão GG flambado, cream cheese, aspargos e ovas de peixe',{P:72,M:90,G:108},'premium'],
-      ['Chocolate com Morango','A sobremesa perfeita para encerrar a refeição','Chocolate ao leite, morango fresco e granulado',{P:42,M:52,G:62},'doce'],
-      ['Nutella com Banana','Irresistível combinação que conquista de primeira','Nutella, banana caramelada, leite condensado e canela',{P:46,M:58,G:70},'doce'],
+    // ----------------------------------------------------------------
+    // PRODUTOS (peças fabricadas pela MetalTech)
+    // ----------------------------------------------------------------
+    const produtos = [
+      ['Viga de Aço W150',        'Perfil estrutural W150 para construção civil',          'VIG-W150',  'un',   85.0,  4.0,  320.00, 'estrutural'],
+      ['Chapa Expandida 3mm',     'Chapa expandida em aço carbono 3mm 1000x2000mm',        'CHP-EXP3',  'un',   18.5,  1.5,  210.00, 'chapa'],
+      ['Tubo Quadrado 50x50',     'Tubo quadrado aço carbono 50x50x3mm barra 6m',          'TUB-Q50',   'un',   12.3,  0.75, 145.00, 'tubo'],
+      ['Tubo Redondo 2"',         'Tubo redondo aço carbono 2 polegadas barra 6m',          'TUB-R2',    'un',   9.8,   0.5,  120.00, 'tubo'],
+      ['Eixo Torneado 40mm',      'Eixo torneado em aço 1020 diâmetro 40mm comprimento 300mm', 'EIX-40', 'un',  3.1,   2.0,  185.00, 'usinagem'],
+      ['Flange DN50',             'Flange de pescoço soldável DN50 classe 150',             'FLG-DN50',  'un',   2.4,   1.0,   95.00, 'flange'],
+      ['Suporte Soldado Tipo A',  'Suporte em aço carbono com pintura eletrostática',       'SUP-A',     'un',   4.2,   3.0,  270.00, 'soldagem'],
+      ['Engrenagem Helicoidal M4','Engrenagem helicoidal módulo 4, 30 dentes, aço 4140',   'ENG-H4-30', 'un',   1.8,   5.0,  480.00, 'usinagem'],
+      ['Grelha Industrial 600x600','Grelha em barra chata aço carbono 600x600mm malha 30', 'GRL-600',   'un',   22.0,  2.5,  310.00, 'estrutural'],
+      ['Tampa de Inspeção DN200', 'Tampa cega flangeada DN200 aço carbono',                 'TAM-DN200', 'un',   6.5,   1.5,  165.00, 'flange'],
+      ['Mola de Compressão C12',  'Mola de compressão aço mola diâmetro 12mm',              'MOL-C12',   'un',   0.1,   0.5,   28.00, 'mola'],
+      ['Cantoneira 2"x2"',        'Cantoneira abas iguais 2x2 polegadas barra 6m',          'CAN-2X2',   'un',   8.2,   0.5,   98.00, 'estrutural'],
     ];
 
-    // Inserindo as pizzas no banco de dados, convertendo o campo de preços para JSON string antes de inserir
-    for (const [nome, desc, ing, precos, cat] of pizzas) {
-      run('INSERT INTO pizzas (nome, descricao, ingredientes, precos, categoria) VALUES (?, ?, ?, ?, ?)',
-        [nome, desc, ing, JSON.stringify(precos), cat]);
+    for (const [nome, desc, cod, uni, peso, tempo, preco, cat] of produtos) {
+      run(`INSERT INTO produtos
+             (nome, descricao, codigo, unidade_medida, peso_estimado_kg, tempo_producao_h, preco_unitario, categoria)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [nome, desc, cod, uni, peso, tempo, preco, cat]);
     }
-    console.log('✅ 20 pizzas criadas');
+    console.log('✅ 12 produtos criados');
 
+    // ----------------------------------------------------------------
+    // MATÉRIAS-PRIMAS
+    // ----------------------------------------------------------------
+    const materias = [
+      ['Aço Carbono 1020 (barra)', 'ACO-1020-B',   'kg',   850.0, 100.0, 8.50,  'Distribuição Santos Aço'],
+      ['Aço Inox 304 (chapa)',     'ACO-INOX-304', 'kg',   320.0,  50.0, 22.00, 'Açotec Inox Ltda'],
+      ['Aço 4140 (barra)',         'ACO-4140-B',   'kg',   210.0,  40.0, 11.80, 'Distribuição Santos Aço'],
+      ['Aço Mola',                 'ACO-MOLA',     'kg',    95.0,  20.0, 14.50, 'SpringSteel Brasil'],
+      ['Eletrodo de Solda 6013',   'ELET-6013',    'kg',    48.0,  10.0,  9.00, 'Soldas & Cia'],
+      ['Tinta Eletrostática Preta','TINTA-ELET-PT','kg',    30.0,   8.0, 35.00, 'Pinturas Industriais ABC'],
+      ['Disco de Corte 9"',        'DISCO-CORTE9', 'un',   200.0,  50.0,  4.50, 'Abrasivos Norte'],
+      ['Óleo de Corte Solúvel',    'OLEO-CORTE',   'l',    120.0,  20.0,  6.80, 'LubriTech'],
+    ];
+
+    for (const [nome, cod, uni, qtd, minimo, preco, fornecedor] of materias) {
+      run(`INSERT INTO materias_primas
+             (nome, codigo, unidade_medida, quantidade_estoque, quantidade_minima, preco_unitario, fornecedor)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [nome, cod, uni, qtd, minimo, preco, fornecedor]);
+    }
+    console.log('✅ 8 matérias-primas criadas');
+
+    // ----------------------------------------------------------------
+    // ORDENS DE PRODUÇÃO (exemplos de cada status)
+    // ----------------------------------------------------------------
+    const ordens = [
+      // [clienteId, liderId, prazo, status, prioridade, observacoes, total, iniciado_em, finalizado_em]
+      [1, 2, '2026-06-10', 'aguardando',   'alta',    'Cliente solicitou certificado de qualidade',  960.00,  null,                       null],
+      [2, 2, '2026-06-05', 'em_producao',  'urgente', 'Entregar antes do feriado',                  1440.00, "datetime('now','-2 days')", null],
+      [3, 3, '2026-05-30', 'finalizado',   'normal',  '',                                            480.00,  "datetime('now','-5 days')", "datetime('now','-1 day')"],
+      [4, 3, '2026-06-15', 'aguardando',   'normal',  'Verificar tolerância do eixo',                555.00,  null,                       null],
+      [6, 2, '2026-05-25', 'finalizado',   'urgente', 'VIP — entrega expressa realizada',           1920.00, "datetime('now','-8 days')", "datetime('now','-3 days')"],
+      [5, 4, '2026-06-20', 'aguardando',   'baixa',   '',                                            290.00,  null,                       null],
+      [7, 4, '2026-06-01', 'em_producao',  'alta',    'Safra próxima — não atrasar',                 960.00,  "datetime('now','-1 day')", null],
+      [1, 3, '2026-06-25', 'cancelado',    'normal',  'Cliente cancelou — projeto suspenso',         0.00,    null,                       null],
+    ];
+
+    ordens.forEach(([cliId, lidId, prazo, status, prior, obs, total, iniciado, finalizado], i) => {
+      const numero = i + 1;
+      const iniciadoSql  = iniciado  ? `, iniciado_em = ${iniciado}`  : '';
+      const finalizadoSql= finalizado ? `, finalizado_em = ${finalizado}` : '';
+
+      run(`INSERT INTO ordens_producao
+             (numero_ordem, cliente_id, lider_id, prazo_entrega, status, prioridade, observacoes, total)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [numero, cliId, lidId, prazo, status, prior, obs, total]);
+
+      const ordemId = query('SELECT MAX(id) as id FROM ordens_producao')[0].id;
+
+      if (iniciado || finalizado) {
+        run(`UPDATE ordens_producao
+               SET ${iniciado ? `iniciado_em = ${iniciado}` : 'iniciado_em = iniciado_em'}
+                   ${finalizado ? `, finalizado_em = ${finalizado}` : ''}
+             WHERE id = ?`, [ordemId]);
+      }
+    });
+
+    console.log('✅ 8 ordens de produção criadas (variados status)');
+
+    // ----------------------------------------------------------------
+    // ITENS DAS ORDENS (exemplos)
+    // ----------------------------------------------------------------
+    const itensOrdens = [
+      // ordem 1: 3x Viga W150
+      [1, 1, 'Viga de Aço W150',         3,  320.00,  960.00],
+      // ordem 2: 5x Tubo Redondo 2" + 3x Flange DN50
+      [2, 4, 'Tubo Redondo 2"',           5,  120.00,  600.00],
+      [2, 6, 'Flange DN50',               3,   95.00,  285.00],
+      // ordem 3: 2x Engrenagem Helicoidal M4
+      [3, 8, 'Engrenagem Helicoidal M4',  2,  480.00,  960.00],
+      // ordem 4: 3x Eixo Torneado
+      [4, 5, 'Eixo Torneado 40mm',        3,  185.00,  555.00],
+      // ordem 5: 6x Suporte Soldado Tipo A
+      [5, 7, 'Suporte Soldado Tipo A',    6,  270.00, 1620.00],
+      // ordem 6: 2x Mola de Compressão
+      [6,11, 'Mola de Compressão C12',   10,   28.00,  280.00],
+      // ordem 7: 3x Grelha Industrial
+      [7, 9, 'Grelha Industrial 600x600', 3,  310.00,  930.00],
+    ];
+
+    for (const [ordemId, prodId, nomeProd, qtd, precoUnit, subtotal] of itensOrdens) {
+      run(`INSERT INTO itens_ordem
+             (ordem_id, produto_id, nome_produto, quantidade, preco_unitario, subtotal)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+        [ordemId, prodId, nomeProd, qtd, precoUnit, subtotal]);
+    }
+    console.log('✅ Itens das ordens inseridos');
+
+    // ----------------------------------------------------------------
+    // MOVIMENTAÇÕES DE ESTOQUE (entradas e saídas de exemplo)
+    // ----------------------------------------------------------------
+    const movs = [
+      // Entradas (compras)
+      [1, null, 'entrada', 500.0, 'Compra inicial de aço 1020',   1],
+      [2, null, 'entrada', 200.0, 'Compra inicial de inox 304',    1],
+      [3, null, 'entrada', 150.0, 'Compra inicial de aço 4140',    1],
+      // Saídas vinculadas a ordens finalizadas
+      [1,    3, 'saida',    12.5, 'Consumo ordem #3 — engrenagens',2],
+      [1,    5, 'saida',     9.0, 'Consumo ordem #5 — suportes',   2],
+      [4, null, 'entrada',  50.0, 'Reposição aço mola',            1],
+    ];
+
+    for (const [mpId, ordemId, tipo, qtd, obs, usuId] of movs) {
+      run(`INSERT INTO movimentacoes_estoque
+             (materia_prima_id, ordem_id, tipo, quantidade, observacoes, usuario_id)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+        [mpId, ordemId, tipo, qtd, obs, usuId]);
+    }
+    console.log('✅ Movimentações de estoque inseridas');
+
+    console.log('\n======================================');
+    console.log('🔥 SEED METALTECH EXECUTADO COM SUCESSO!');
     console.log('======================================');
-    console.log('🔥 SEED EXECUTADO COM SUCESSO!');
-    console.log('======================================');
-    console.log('Login: admin@pizzaria.com | Senha: 123456');
-    console.log('======================================');
+    console.log('👔 Gerente  → gerente@metaltech.com  | Senha: 123456');
+    console.log('🔧 Líder 1  → lider1@metaltech.com   | Senha: 123456');
+    console.log('🔧 Líder 2  → lider2@metaltech.com   | Senha: 123456');
+    console.log('🔧 Líder 3  → lider3@metaltech.com   | Senha: 123456');
+    console.log('======================================\n');
     process.exit(0);
+
   } catch (err) {
     console.error('❌ ERRO NO SEED:', err);
     process.exit(1);
   }
 }
 
-// Executando a função para popular o banco de dados com os dados iniciais
 seed();
