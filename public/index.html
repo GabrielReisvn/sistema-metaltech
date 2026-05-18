@@ -3,20 +3,22 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title> ⚙ MetalTech</title>
+  <title>⚙ FactoryTrack — MetalTech</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- TELA DE LOGIN -->
+<!-- ============================================================
+     TELA DE LOGIN
+     ============================================================ -->
 <div id="tela-login">
   <div class="login-box">
     <div class="login-logo">
       <span class="em">⚙</span>
-      <h1>MetalTech</h1>
-      <p>Sistema de Gestão · Faça login para continuar</p>
+      <h1>FactoryTrack</h1>
+      <p>MetalTech · Sistema de Produção · Faça login para continuar</p>
     </div>
     <div class="login-erro" id="login-erro"></div>
     <div class="fg">
@@ -30,20 +32,25 @@
         onkeydown="if(event.key==='Enter') fazerLogin()">
     </div>
     <button class="btn btn-red" id="btn-login"
-      style="width:100%;padding:10px;margin-top:4px; text-align: center;"
+      style="width:100%;padding:10px;margin-top:4px;text-align:center"
       onclick="fazerLogin()">
       Entrar
     </button>
     <p style="text-align:center;font-size:.69rem;color:var(--muted);margin-top:14px">
-      Rode <strong style="color:var(--text)">node seed.js</strong> para criar o admin inicial
+      Rode <strong style="color:var(--text)">node seed.js</strong> para criar os usuários iniciais
     </p>
   </div>
 </div>
-<!-- TELA PRINCIPAL -->
+
+<!-- ============================================================
+     APP PRINCIPAL
+     ============================================================ -->
 <div id="app">
+
+  <!-- SIDEBAR -->
   <aside id="sidebar">
     <div class="sb-logo">
-      <h1>⚙ MetalTech</h1>
+      <h1>⚙ FactoryTrack</h1>
       <div class="sb-user">
         <span class="tag" id="sb-perfil">—</span>
         <span id="sb-nome">—</span>
@@ -51,97 +58,100 @@
     </div>
     <nav class="sb-nav">
       <div class="sb-group">Geral</div>
-      <button class="nav-btn ativo" onclick="ir('dashboard',this)">
+      <button class="nav-btn ativo" onclick="ir('dashboard', this)">
         <span class="ic">📊</span><span>Dashboard</span>
       </button>
-      <button class="nav-btn" onclick="ir('pedidos',this)">
-        <span class="ic">📋</span><span>Pedidos</span>
+
+      <div class="sb-group">Produção</div>
+      <button class="nav-btn" onclick="ir('ordens', this)">
+        <span class="ic">📋</span><span>Ordens de Produção</span>
       </button>
+
       <div class="sb-group">Cadastros</div>
-      <button class="nav-btn" onclick="ir('pizzas',this)">
-        <span class="ic">🔩</span><span id="nav-pizzas-label">Peças</span>
+      <button class="nav-btn" onclick="ir('produtos', this)">
+        <span class="ic">🔩</span><span>Produtos / Peças</span>
       </button>
-      <button class="nav-btn" onclick="ir('clientes',this)">
-        <span class="ic">👥</span><span>Clientes</span>
+      <button class="nav-btn" onclick="ir('clientes', this)">
+        <span class="ic">🏭</span><span>Clientes</span>
       </button>
+      <button class="nav-btn" onclick="ir('estoque', this)">
+        <span class="ic">📦</span><span>Estoque</span>
+      </button>
+
+      <!-- Visível apenas para Gerente -->
       <div class="sb-group" id="menu-usuarios" style="display:none">Sistema</div>
-      <button class="nav-btn" id="btn-usuarios" onclick="ir('usuarios',this)"
+      <button class="nav-btn" id="btn-usuarios" onclick="ir('usuarios', this)"
         style="display:none">
         <span class="ic">🔐</span><span>Usuários</span>
       </button>
-      <div class="sb-group" id="sb-group-garcom" style="display:none">Mesas</div>
-      <button class="nav-btn" id="btn-nav-mesas" onclick="ir('mesas',this)"
-        style="display:none">
-        <span class="ic">🪑</span><span>Minhas Mesas</span>
-      </button>
     </nav>
     <div class="sb-footer">
-      <span>v2.0</span>
+      <span>v1.0</span>
       <button class="btn-logout" onclick="sair()">Sair</button>
     </div>
   </aside>
 
-  <!-- CONTEUDO PRINCIPAL -->
+  <!-- CONTEÚDO PRINCIPAL -->
   <div id="conteudo">
+
+    <!-- DASHBOARD -->
     <section id="pg-dashboard" class="secao ativa">
       <div class="pg-header">
         <div>
           <h2>Dashboard</h2>
-          <p id="dash-sub">Resumo do sistema</p>
+          <p id="dash-sub">Visão geral da produção</p>
         </div>
-        
         <button class="btn btn-ghost btn-sm" onclick="carregarDashboard()">↻ Atualizar</button>
       </div>
-      <!-- ESTATÍSTICAS -->
       <div class="pg-body">
         <div class="stats-grid">
           <div class="stat cr">
             <span class="ico">📋</span>
-            <div class="lbl">Pedidos</div>
-            <div class="val" id="s-ped">—</div>
-            <div class="sub" id="s-ped-sub">carregando</div>
+            <div class="lbl">Ordens Hoje</div>
+            <div class="val" id="s-ordens">—</div>
+            <div class="sub" id="s-ordens-sub">carregando</div>
           </div>
-          <div class="stat co" id="stat-fat">
-            <span class="ico">💰</span>
-            <div class="lbl">Faturamento</div>
-            <div class="val" id="s-fat">—</div>
-            <div class="sub">total geral</div>
+          <div class="stat co">
+            <span class="ico">🔄</span>
+            <div class="lbl">Em Produção</div>
+            <div class="val" id="s-em-prod">—</div>
+            <div class="sub">agora na fábrica</div>
           </div>
-          <div class="stat cg" id="stat-cli">
-            <span class="ico">👥</span>
+          <div class="stat cg">
+            <span class="ico">✅</span>
+            <div class="lbl">Finalizadas</div>
+            <div class="val" id="s-final">—</div>
+            <div class="sub">este mês</div>
+          </div>
+          <div class="stat cb">
+            <span class="ico">🏭</span>
             <div class="lbl">Clientes</div>
             <div class="val" id="s-cli">—</div>
             <div class="sub">cadastrados</div>
           </div>
-          <div class="stat cb">
-            <span class="ico">⚙</span>
-            <div class="lbl">Peças</div>
-            <div class="val" id="s-piz">—</div>
-            <div class="sub">no menu</div>
-          </div>
           <div class="stat cp">
-            <span class="ico">🛵</span>
-            <div class="lbl">Em entrega</div>
-            <div class="val" id="s-ent">—</div>
-            <div class="sub">saíram agora</div>
+            <span class="ico">⏰</span>
+            <div class="lbl">Aguardando</div>
+            <div class="val" id="s-aguard">—</div>
+            <div class="sub">na fila</div>
           </div>
         </div>
         <div class="dash-grid">
           <div class="card">
             <div class="card-head">
-              <h3>Pedidos Recentes</h3>
+              <h3>Ordens Recentes</h3>
               <button class="btn btn-red btn-sm"
-                onclick="ir('pedidos', document.querySelector('[onclick*=pedidos]'))">
-                + Novo
+                onclick="ir('ordens', document.querySelector('[onclick*=ordens]'))">
+                + Nova
               </button>
             </div>
-            <div class="card-body" id="dash-pedidos">
+            <div class="card-body" id="dash-ordens">
               <div class="spin-wrap"><div class="spin"></div> Carregando...</div>
             </div>
           </div>
           <div class="card">
-            <div class="card-head"><h3>Cardápio Ativo</h3></div>
-            <div class="card-body" id="dash-cardapio">
+            <div class="card-head"><h3>Produtos Ativos</h3></div>
+            <div class="card-body" id="dash-produtos">
               <div class="spin-wrap"><div class="spin"></div> Carregando...</div>
             </div>
           </div>
@@ -149,53 +159,57 @@
       </div>
     </section>
 
-    <!-- SEÇÃO DE PEDIDOS -->
-    <section id="pg-pedidos" class="secao">
+    <!-- ORDENS DE PRODUÇÃO -->
+    <section id="pg-ordens" class="secao">
       <div class="pg-header">
-        <div><h2>Pedidos</h2><p>Acompanhe e gerencie os pedidos</p></div>
-        <!-- botão criar novo pedido -->
-        <button class="btn btn-red" onclick="abrirPedido()">+ Novo Pedido</button> 
+        <div><h2>Ordens de Produção</h2><p>Acompanhe e gerencie as ordens</p></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="filtro-status" class="btn btn-ghost btn-sm" onchange="carregarOrdens()"
+            style="padding:6px 10px;font-size:.78rem">
+            <option value="">Todos os status</option>
+            <option value="aguardando">Aguardando</option>
+            <option value="em_producao">Em Produção</option>
+            <option value="finalizado">Finalizado</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+          <button class="btn btn-red" onclick="abrirOrdem()">+ Nova Ordem</button>
+        </div>
       </div>
-      <!-- TABELA DE PEDIDOS -->
       <div class="pg-body">
         <div class="card">
-          <div class="card-body tbl-wrap" id="tbl-pedidos">
+          <div class="card-body tbl-wrap" id="tbl-ordens">
             <div class="spin-wrap"><div class="spin"></div> Carregando...</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- SEÇÃO DE PIZZAS -->
-    <section id="pg-pizzas" class="secao">
+    <!-- PRODUTOS / PEÇAS -->
+    <section id="pg-produtos" class="secao">
       <div class="pg-header">
-        <div>
-          <h2 id="pg-pizzas-titulo">Peças</h2>
-          <p id="pg-pizzas-sub">Gerencie o cardápio</p>
-        </div>
-        <button class="btn btn-red" id="btn-nova-pizza" onclick="abrirPizza()">+ Nova Peça</button>
+        <div><h2>Produtos / Peças</h2><p>Catálogo de peças fabricadas</p></div>
+        <button class="btn btn-red" id="btn-novo-produto" onclick="abrirProduto()">+ Nova Peça</button>
       </div>
       <div class="pg-body">
         <div class="card">
-          <div class="card-body tbl-wrap" id="tbl-pizzas">
+          <div class="card-body tbl-wrap" id="tbl-produtos">
             <div class="spin-wrap"><div class="spin"></div> Carregando...</div>
           </div>
         </div>
       </div>
     </section>
-    <!-- SEÇÃO DE CLIENTES -->
+
+    <!-- CLIENTES -->
     <section id="pg-clientes" class="secao">
       <div class="pg-header">
-        <div><h2>Clientes</h2><p>Cadastre e busque clientes</p></div>
+        <div><h2>Clientes</h2><p>Empresas e contatos</p></div>
         <button class="btn btn-red" onclick="abrirCliente()">+ Novo Cliente</button>
       </div>
-      <!-- CAMPO DE BUSCA -->
       <div class="pg-body">
         <div style="margin-bottom:12px">
-          <input id="busca-cli" placeholder="🔍  Buscar por nome..."
-            style="max-width:270px" oninput="buscarCli(this.value)">
+          <input id="busca-cli" placeholder="🔍  Buscar por nome ou CNPJ..."
+            style="max-width:300px" oninput="buscarCli(this.value)">
         </div>
-        <!-- TABELA DE CLIENTES -->
         <div class="card">
           <div class="card-body tbl-wrap" id="tbl-clientes">
             <div class="spin-wrap"><div class="spin"></div> Carregando...</div>
@@ -204,13 +218,27 @@
       </div>
     </section>
 
-    <!-- SEÇÃO DE USUÁRIOS -->
+    <!-- ESTOQUE -->
+    <section id="pg-estoque" class="secao">
+      <div class="pg-header">
+        <div><h2>Estoque</h2><p>Matérias-primas e movimentações</p></div>
+        <button class="btn btn-red" onclick="abrirMovimentacao()">+ Movimentação</button>
+      </div>
+      <div class="pg-body">
+        <div class="card">
+          <div class="card-body tbl-wrap" id="tbl-estoque">
+            <div class="spin-wrap"><div class="spin"></div> Carregando...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- USUÁRIOS (somente Gerente) -->
     <section id="pg-usuarios" class="secao">
       <div class="pg-header">
-        <div><h2>Usuários</h2><p>Atendentes e administradores</p></div>
+        <div><h2>Usuários</h2><p>Líderes e gerentes do sistema</p></div>
         <button class="btn btn-ghost" onclick="abrirUsuario()">+ Novo Usuário</button>
       </div>
-      <!-- TABELA DE USUÁRIOS -->
       <div class="pg-body">
         <div class="card">
           <div class="card-body tbl-wrap" id="tbl-usuarios">
@@ -220,170 +248,67 @@
       </div>
     </section>
 
-    <!-- SEÇÃO DE MESAS -->
-    <section id="pg-mesas" class="secao">
-      <div class="pg-header">
-        <div>
-          <h2>Mesas</h2>
-          <p id="mesas-sub">Seus pedidos ativos</p>
-        </div>
-        <button class="btn btn-red" onclick="abrirPedidoMesa()">+ Novo Pedido</button>
-      </div>
-      <!-- ESTATÍSTICAS -->
-      <div class="pg-body">
-        <div class="stats-grid" style="margin-bottom:18px">
-          <div class="stat cr">
-            <span class="ico">📋</span>
-            <div class="lbl">Meus Pedidos</div>
-            <div class="val" id="g-ped">—</div>
-            <div class="sub" id="g-ped-sub">hoje</div>
-          </div>
-          <!-- MESAS ATIVAS -->
-          <div class="stat cg">
-            <span class="ico">🪑</span>
-            <div class="lbl">Mesas Ativas</div>
-            <div class="val" id="g-mesas">—</div>
-            <div class="sub">com pedido aberto</div>
-          </div>
-          <!-- EM PREPARO -->
-          <div class="stat cb">
-            <span class="ico">👨‍🍳</span>
-            <div class="lbl">Em Preparo</div>
-            <div class="val" id="g-preparo">—</div>
-            <div class="sub">sendo preparados</div>
-          </div>
-          <!-- PRONTOS -->
-          <div class="stat cp">
-            <span class="ico">🛵</span>
-            <div class="lbl">Prontos</div>
-            <div class="val" id="g-prontos">—</div>
-            <div class="sub">aguardando retirada</div>
-          </div>
-        </div>
-        <!-- BOTÕES DE FILTRO -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-          <span style="font-size:.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px">Mesa:</span>
-          <div style="display:flex;gap:5px;flex-wrap:wrap" id="mesa-botoes"></div>
-          <button class="btn btn-ghost btn-sm" onclick="carregarMesas(null)">Todas</button>
-        </div>
-        <!-- GRID DE MESAS -->
-        <div id="grid-mesas" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
-          <div class="spin-wrap"><div class="spin"></div> Carregando...</div>
-        </div>
-      </div>
-    </section>
-  </div>
-</div>
+  </div><!-- /conteudo -->
+</div><!-- /app -->
 
-<!-- MODAL DE PIZZA -->
-<div id="m-pizza" class="modal-bg">
-  <div class="modal">
-    <h3 id="m-pizza-t">Nova Pizza</h3>
-    <input type="hidden" id="p-id">
+
+<!-- ============================================================
+     MODAL — ORDEM DE PRODUÇÃO
+     ============================================================ -->
+<div id="m-ordem" class="modal-bg">
+  <div class="modal lg">
+    <h3 id="m-ordem-t">Nova Ordem de Produção</h3>
+    <input type="hidden" id="o-id">
     <div class="fr2">
-      <div class="fg"><label>Nome *</label><input id="p-nome" placeholder="Ex: Calabresa"></div>
-      <div class="fg"><label>Categoria</label>
-        <select id="p-cat">
-          <option value="tradicional">Tradicional</option>
-          <option value="especial">Especial</option>
-          <option value="premium">Premium</option>
-          <option value="doce">Doce</option>
+      <div class="fg"><label>Cliente *</label><select id="o-cli"></select></div>
+      <div class="fg"><label>Prazo de Entrega *</label><input id="o-prazo" type="date"></div>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label>Prioridade</label>
+        <select id="o-prior">
+          <option value="baixa">🟢 Baixa</option>
+          <option value="normal" selected>🔵 Normal</option>
+          <option value="alta">🟡 Alta</option>
+          <option value="urgente">🔴 Urgente</option>
         </select>
       </div>
+      <div class="fg"><label>Líder Responsável</label><select id="o-lider"></select></div>
     </div>
-    <!-- CAMPO DE INGREDIENTES para nova pizza -->
-    <div class="fg"><label>Ingredientes *</label><input id="p-ing" placeholder="Calabresa, cebola, mussarela..."></div>
-    <div class="fg"><label>Descrição</label><input id="p-desc" placeholder="Breve descrição..."></div>
-    <div class="fr3">
-      <div class="fg"><label>Preço P (R$)</label><input id="p-pp" type="number" step="0.01" min="0" placeholder="35,00"></div>
-      <div class="fg"><label>Preço M (R$)</label><input id="p-pm" type="number" step="0.01" min="0" placeholder="45,00"></div>
-      <div class="fg"><label>Preço G (R$)</label><input id="p-pg" type="number" step="0.01" min="0" placeholder="55,00"></div>
-    </div>
-    <div class="fg"><label>Disponível</label>
-      <select id="p-disp">
-        <option value="true">✅ Sim</option>
-        <option value="false">❌ Não</option>
-      </select>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="fechar('m-pizza')">Cancelar</button>
-      <button class="btn btn-red"   onclick="salvarPizza()">Salvar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL DE CLIENTE -->
-<div id="m-cliente" class="modal-bg">
-  <div class="modal">
-    <h3 id="m-cli-t">Novo Cliente</h3>
-    <input type="hidden" id="c-id">
-    <div class="fr2">
-      <!-- CAMPO DE INFORMAÇÕES DO NOVO CLIENTE -->
-      <div class="fg"><label>Nome *</label><input id="c-nome" placeholder="João da Silva"></div>
-      <div class="fg"><label>Telefone *</label><input id="c-tel" placeholder="(11) 99999-9999"></div>
-    </div>
-    <div class="fr2">
-      <div class="fg"><label>Rua</label><input id="c-rua" placeholder="Rua das Flores"></div>
-      <div class="fg"><label>Número</label><input id="c-num" placeholder="123"></div>
-    </div>
-    <div class="fr3">
-      <div class="fg"><label>Bairro</label><input id="c-bairro" placeholder="Centro"></div>
-      <div class="fg"><label>Cidade</label><input id="c-cidade" placeholder="São Paulo"></div>
-      <div class="fg"><label>CEP</label><input id="c-cep" placeholder="00000-000"></div>
-    </div>
-    <div class="fg"><label>Complemento</label><input id="c-comp" placeholder="Apto 12, Bloco B"></div>
-    <div class="fg"><label>Observações</label><input id="c-obs" placeholder="Alergia, preferências..."></div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="fechar('m-cliente')">Cancelar</button>
-      <button class="btn btn-red"   onclick="salvarCliente()">Salvar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL DE PEDIDO -->
-<div id="m-pedido" class="modal-bg">
-  <div class="modal lg">
-    <h3>Novo Pedido</h3>
-    <!-- CAMPO DE SELEÇÃO DO CLIENTE -->
-    <div class="fg"><label>Cliente *</label><select id="ped-cli"></select></div>
     <div class="div"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
-      <label style="margin-bottom:0;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.3px">Itens do Pedido</label>
-      <button class="btn btn-ghost btn-sm" onclick="addItem()">+ Pizza</button>
+      <label style="margin-bottom:0;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.3px">Itens da Ordem</label>
+      <button class="btn btn-ghost btn-sm" onclick="addItemOrdem()">+ Peça</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 68px 58px 68px 30px;gap:6px;font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;padding:0 1px">
-      <span>Pizza</span><span>Tam.</span><span>Qtd</span><span>Subtotal</span><span></span>
+    <div style="display:grid;grid-template-columns:1fr 70px 60px 80px 30px;gap:6px;font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;padding:0 1px">
+      <span>Produto</span><span>Qtd</span><span>Un.</span><span>Subtotal</span><span></span>
     </div>
-    <div id="itens-lista"></div>
+    <div id="itens-ordem-lista"></div>
     <div class="total-box">
-      <!-- TOTAL DO PEDIDO -->
-      <div class="row"><span>Subtotal</span><span id="ped-sub">R$ 0,00</span></div>
-      <div class="row"><span>Taxa de Entrega (R$)</span><input id="ped-taxa" type="number" min="0" step="0.5" value="0" style="width:72px;text-align:right;padding:3px 6px" oninput="recalc()"></div>
-      <div class="row tot"><span>TOTAL</span><span id="ped-tot">R$ 0,00</span></div>
+      <div class="row tot"><span>TOTAL DA ORDEM</span><span id="o-total">R$ 0,00</span></div>
     </div>
-    <div class="fr2">
-      <div class="fg"><label>Forma de Pagamento *</label><select id="ped-pag" onchange="toggleTroco()"><option value="pix">PIX</option><option value="cartao_credito">Cartão de Crédito</option><option value="cartao_debito">Cartão de Débito</option><option value="dinheiro">Dinheiro</option></select></div>
-      <div class="fg" id="wrap-troco" style="display:none"><label>Troco para (R$)</label><input id="ped-troco" type="number" min="0" step="1" placeholder="Ex: 100"></div>
+    <div class="fg"><label>Observações</label>
+      <textarea id="o-obs" rows="2" placeholder="Informações adicionais sobre a ordem..."></textarea>
     </div>
-    <div class="fg"><label>Observações</label><textarea id="ped-obs" rows="2" placeholder="Sem cebola, massa fina..."></textarea></div>
     <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="fechar('m-pedido')">Cancelar</button>
-      <button class="btn btn-red"   onclick="salvarPedido()">Confirmar Pedido</button>
+      <button class="btn btn-ghost" onclick="fechar('m-ordem')">Cancelar</button>
+      <button class="btn btn-red"   onclick="salvarOrdem()">Criar Ordem</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL DE ATUALIZAÇÃO DE STATUS -->
+<!-- ============================================================
+     MODAL — ATUALIZAR STATUS DA ORDEM
+     ============================================================ -->
 <div id="m-status" class="modal-bg">
-  <div class="modal" style="max-width:330px">
+  <div class="modal" style="max-width:340px">
     <h3>Atualizar Status</h3>
     <input type="hidden" id="st-id">
+    <p id="st-info" style="font-size:.78rem;color:var(--muted);margin-bottom:12px"></p>
     <div class="fg"><label>Novo Status</label>
       <select id="st-val">
-        <option value="recebido">📥 Recebido</option>
-        <option value="em_preparo">👨‍🍳 Em Preparo</option>
-        <option value="saiu_entrega">🛵 Saiu para Entrega</option>
-        <option value="entregue">✅ Entregue</option>
+        <option value="aguardando">⏳ Aguardando</option>
+        <option value="em_producao">🔄 Em Produção</option>
+        <option value="finalizado">✅ Finalizado</option>
         <option value="cancelado">❌ Cancelado</option>
       </select>
     </div>
@@ -394,70 +319,137 @@
   </div>
 </div>
 
-<!-- MODAL DE USUÁRIO -->
+<!-- ============================================================
+     MODAL — PRODUTO / PEÇA
+     ============================================================ -->
+<div id="m-produto" class="modal-bg">
+  <div class="modal">
+    <h3 id="m-produto-t">Nova Peça</h3>
+    <input type="hidden" id="p-id">
+    <div class="fr2">
+      <div class="fg"><label>Nome *</label><input id="p-nome" placeholder="Ex: Viga de Aço W150"></div>
+      <div class="fg"><label>Código *</label><input id="p-cod" placeholder="Ex: VIG-W150"></div>
+    </div>
+    <div class="fr3">
+      <div class="fg"><label>Categoria</label>
+        <select id="p-cat">
+          <option value="estrutural">Estrutural</option>
+          <option value="usinagem">Usinagem</option>
+          <option value="soldagem">Soldagem</option>
+          <option value="tubo">Tubo</option>
+          <option value="flange">Flange</option>
+          <option value="chapa">Chapa</option>
+          <option value="mola">Mola</option>
+          <option value="geral">Geral</option>
+        </select>
+      </div>
+      <div class="fg"><label>Unidade</label><input id="p-uni" placeholder="un, kg, m..."></div>
+      <div class="fg"><label>Preço Unitário (R$)</label><input id="p-preco" type="number" step="0.01" min="0" placeholder="0,00"></div>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label>Peso Estimado (kg)</label><input id="p-peso" type="number" step="0.01" min="0" placeholder="0,00"></div>
+      <div class="fg"><label>Tempo de Produção (h)</label><input id="p-tempo" type="number" step="0.5" min="0" placeholder="0"></div>
+    </div>
+    <div class="fg"><label>Descrição</label><input id="p-desc" placeholder="Breve descrição da peça..."></div>
+    <div class="fg"><label>Disponível</label>
+      <select id="p-disp">
+        <option value="true">✅ Sim</option>
+        <option value="false">❌ Não</option>
+      </select>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="fechar('m-produto')">Cancelar</button>
+      <button class="btn btn-red"   onclick="salvarProduto()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL — CLIENTE
+     ============================================================ -->
+<div id="m-cliente" class="modal-bg">
+  <div class="modal">
+    <h3 id="m-cli-t">Novo Cliente</h3>
+    <input type="hidden" id="c-id">
+    <div class="fr2">
+      <div class="fg"><label>Nome / Razão Social *</label><input id="c-nome" placeholder="Construtora ABC Ltda"></div>
+      <div class="fg"><label>CNPJ / CPF *</label><input id="c-cnpj" placeholder="00.000.000/0001-00"></div>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label>Telefone</label><input id="c-tel" placeholder="(11) 99999-9999"></div>
+      <div class="fg"><label>E-mail</label><input id="c-email" type="email" placeholder="contato@empresa.com.br"></div>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label>Rua</label><input id="c-rua" placeholder="Av. das Indústrias"></div>
+      <div class="fg"><label>Número</label><input id="c-num" placeholder="1500"></div>
+    </div>
+    <div class="fr3">
+      <div class="fg"><label>Bairro</label><input id="c-bairro" placeholder="Dist. Industrial"></div>
+      <div class="fg"><label>Cidade</label><input id="c-cidade" placeholder="São Paulo"></div>
+      <div class="fg"><label>CEP</label><input id="c-cep" placeholder="00000-000"></div>
+    </div>
+    <div class="fg"><label>Observações</label><input id="c-obs" placeholder="Requer certificado, entrega às terças..."></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="fechar('m-cliente')">Cancelar</button>
+      <button class="btn btn-red"   onclick="salvarCliente()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL — MOVIMENTAÇÃO DE ESTOQUE
+     ============================================================ -->
+<div id="m-movimentacao" class="modal-bg">
+  <div class="modal">
+    <h3>Nova Movimentação</h3>
+    <div class="fr2">
+      <div class="fg"><label>Matéria-Prima *</label><select id="mov-mp"></select></div>
+      <div class="fg"><label>Tipo *</label>
+        <select id="mov-tipo">
+          <option value="entrada">📥 Entrada (compra/reposição)</option>
+          <option value="saida">📤 Saída (consumo em ordem)</option>
+        </select>
+      </div>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label>Quantidade *</label><input id="mov-qtd" type="number" step="0.01" min="0.01" placeholder="0"></div>
+      <div class="fg"><label>Ordem Vinculada (opcional)</label><select id="mov-ordem"><option value="">— Nenhuma —</option></select></div>
+    </div>
+    <div class="fg"><label>Observações</label><input id="mov-obs" placeholder="Ex: NF 1234, Fornecedor XYZ..."></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="fechar('m-movimentacao')">Cancelar</button>
+      <button class="btn btn-red"   onclick="salvarMovimentacao()">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL — USUÁRIO
+     ============================================================ -->
 <div id="m-usuario" class="modal-bg">
   <div class="modal">
     <h3>Novo Usuário</h3>
     <div class="fr2">
-      <!-- CAMPO DE INFORMAÇÕES DO NOVO USUÁRIO -->
       <div class="fg"><label>Nome *</label><input id="u-nome" placeholder="Nome completo"></div>
-      <div class="fg"><label>Perfil</label><select id="u-perfil"><option value="Atendente">Atendente</option><option value="Garcom">Garçom</option><option value="Administrador">Administrador</option></select></div>
+      <div class="fg"><label>Perfil</label>
+        <select id="u-perfil">
+          <option value="Lider">🔧 Líder de Produção</option>
+          <option value="Gerente">👔 Gerente</option>
+        </select>
+      </div>
     </div>
-    <div class="fg"><label>E-mail *</label><input id="u-email" type="email" placeholder="usuario@pizzaria.com"></div>
+    <div class="fg"><label>E-mail *</label><input id="u-email" type="email" placeholder="lider@metaltech.com"></div>
     <div class="fg"><label>Senha *</label><input id="u-senha" type="password" placeholder="Mínimo 6 caracteres"></div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="fechar('m-usuario')">Cancelar</button>
-      <button class="btn btn-ghost" onclick="salvarUsuario()">Criar</button>
+      <button class="btn btn-red"   onclick="salvarUsuario()">Criar Usuário</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL DE PEDIDO DE MESA -->
-<div id="m-pedido-mesa" class="modal-bg">
-  <div class="modal lg">
-    <h3>Pedido de Mesa</h3>
-    <div class="fr2">
-      <div class="fg"><label>Mesa *</label><select id="pm-mesa"><option value="">— Selecione a mesa —</option><option value="1">Mesa 1</option><option value="2">Mesa 2</option><option value="3">Mesa 3</option><option value="4">Mesa 4</option><option value="5">Mesa 5</option><option value="6">Mesa 6</option><option value="7">Mesa 7</option><option value="8">Mesa 8</option><option value="9">Mesa 9</option><option value="10">Mesa 10</option></select></div>
-      <div class="fg"><label>Cliente (opcional)</label><select id="pm-cli"><option value="">— Sem cadastro —</option></select></div>
-    </div>
-    <!-- ITENS DO PEDIDO -->
-    <div class="div"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
-      <label style="margin-bottom:0;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.3px">Itens do Pedido</label>
-      <button class="btn btn-ghost btn-sm" onclick="addItemMesa()">+ Pizza</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 68px 58px 68px 30px;gap:6px;font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;padding:0 1px">
-      <span>Pizza</span><span>Tam.</span><span>Qtd</span><span>Subtotal</span><span></span>
-    </div>
-    <!-- LISTA DE ITENS DO PEDIDO -->
-    <div id="itens-mesa-lista"></div>
-    <div class="total-box">
-      <div class="row"><span>Subtotal</span><span id="pm-sub">R$ 0,00</span></div>
-      <div class="row tot"><span>TOTAL DA MESA</span><span id="pm-tot">R$ 0,00</span></div>
-    </div>
-    <div class="fg"><label>Observações</label><textarea id="pm-obs" rows="2" placeholder="Sem cebola, bem passado..."></textarea></div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="fechar('m-pedido-mesa')">Cancelar</button>
-      <button class="btn btn-red"   onclick="salvarPedidoMesa()">Confirmar Pedido</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL DE FECHAMENTO DE MESA -->
-<div id="m-fechar-mesa" class="modal-bg">
-  <div class="modal" style="max-width:440px">
-    <h3 id="fm-titulo">Fechar Mesa</h3>
-    <div id="fm-resumo" style="margin-bottom:12px"></div>
-    <div class="total-box"><div class="row"><span>Total consumido</span><span id="fm-total">R$ 0,00</span></div></div>
-    <div class="fg"><label>Forma de Pagamento</label><select id="fm-pag"><option value="pix">PIX</option><option value="cartao_credito">Cartão de Crédito</option><option value="cartao_debito">Cartão de Débito</option><option value="dinheiro">Dinheiro</option></select></div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="fechar('m-fechar-mesa')">Cancelar</button>
-      <button class="btn btn-green" onclick="confirmarFechamento()">✅ Fechar Mesa</button>
-    </div>
-  </div>
-</div>
-<!-- MODAL DE NOTIFICAÇÃO -->
+<!-- TOAST DE NOTIFICAÇÃO -->
 <div id="toast"></div>
+
 <script src="script.js"></script>
 </body>
 </html>
