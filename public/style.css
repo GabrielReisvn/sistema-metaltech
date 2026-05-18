@@ -17,6 +17,9 @@
   --orange:  #ff7d3b;
   --text:    #f0f0f0;
   --muted:   #777;
+  --rox-inf: #c4b5fd;
+  --blue-inf: #93c5fd;
+  --red-inf: #f87171;
   --r:       10px;
 }
 
@@ -330,22 +333,22 @@ td { padding: 10px 12px; vertical-align: middle; }
 
 /* Status de ordens de produção */
 .b-aguardando   { background: rgba(245,200,66,.18);  color: var(--gold); }
-.b-em_producao  { background: rgba(59,130,246,.18);  color: #93c5fd; }
+.b-em_producao  { background: rgba(59,130,246,.18);  color: var(--blue-inf); }
 .b-finalizado   { background: rgba(41,199,111,.18);  color: var(--green); }
-.b-cancelado    { background: rgba(232,55,42,.15);   color: #f87171; }
+.b-cancelado    { background: rgba(232,55,42,.15);   color: var(--red-inf); }
 
 /* Prioridade */
 .b-baixa    { background: rgba(41,199,111,.12);   color: var(--green); }
-.b-normal   { background: rgba(59,130,246,.12);   color: #93c5fd; }
+.b-normal   { background: rgba(59,130,246,.12);   color: var(--blue-inf); }
 .b-alta     { background: rgba(245,200,66,.15);   color: var(--gold); }
-.b-urgente  { background: rgba(232,55,42,.15);    color: #f87171; }
+.b-urgente  { background: rgba(232,55,42,.15);    color:var(--red-inf); }
 
 /* Usuários / genérico */
 .b-on       { background: rgba(41,199,111,.18);   color: var(--green); }
 .b-off      { background: rgba(120,120,120,.15);  color: var(--muted); }
-.b-gerente  { background: rgba(139,92,246,.15);   color: #c4b5fd; }
-.b-lider    { background: rgba(59,130,246,.15);   color: #93c5fd; }
-.b-cat      { background: rgba(139,92,246,.13);   color: #c4b5fd; }
+.b-gerente  { background: rgba(139,92,246,.15);   color: var(--rox-inf); }
+.b-lider    { background: rgba(59,130,246,.15);   color: var(--blue-inf); }
+.b-cat      { background: rgba(139,92,246,.13);   color: var(--rox-inf); }
 
 /* ============================================================
    BOTÕES
@@ -374,7 +377,7 @@ td { padding: 10px 12px; vertical-align: middle; }
 .btn-ghost        { background: var(--surf2);  color: var(--text); border: 1px solid var(--border); }
 .btn-ghost:hover  { border-color: #555; }
 .btn-sm           { padding: 4px 9px; font-size: 0.73rem; }
-.btn-danger       { background: rgba(232,55,42,.1); color: #f87171; }
+.btn-danger       { background: rgba(232,55,42,.1); color: var(--red-inf); }
 .btn-danger:hover { background: rgba(232,55,42,.22); }
 
 /* ============================================================
@@ -475,7 +478,7 @@ select option      { background: var(--surf2); }
   background: rgba(232,55,42,.1);
   border: none;
   border-radius: 6px;
-  color: #f87171;
+  color: var(--red-inf);
   font-size: 1.05rem;
   width: 30px; height: 30px;
   cursor: pointer;
