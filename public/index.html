@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🍕 Pizzaria</title>
+  <title> ⚙ MetalTech</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -14,14 +14,14 @@
 <div id="tela-login">
   <div class="login-box">
     <div class="login-logo">
-      <span class="em">🍕</span>
-      <h1>Pizzaria</h1>
+      <span class="em">⚙</span>
+      <h1>MetalTech</h1>
       <p>Sistema de Gestão · Faça login para continuar</p>
     </div>
     <div class="login-erro" id="login-erro"></div>
     <div class="fg">
       <label>E-mail</label>
-      <input id="l-email" type="email" placeholder="admin@pizzaria.com"
+      <input id="l-email" type="email" placeholder="gerente@metaltech.com"
         onkeydown="if(event.key==='Enter') fazerLogin()">
     </div>
     <div class="fg">
@@ -30,7 +30,7 @@
         onkeydown="if(event.key==='Enter') fazerLogin()">
     </div>
     <button class="btn btn-red" id="btn-login"
-      style="width:100%;padding:10px;margin-top:4px"
+      style="width:100%;padding:10px;margin-top:4px; text-align: center;"
       onclick="fazerLogin()">
       Entrar
     </button>
@@ -43,7 +43,7 @@
 <div id="app">
   <aside id="sidebar">
     <div class="sb-logo">
-      <h1>🍕 Pizzaria</h1>
+      <h1>⚙ MetalTech</h1>
       <div class="sb-user">
         <span class="tag" id="sb-perfil">—</span>
         <span id="sb-nome">—</span>
@@ -59,7 +59,7 @@
       </button>
       <div class="sb-group">Cadastros</div>
       <button class="nav-btn" onclick="ir('pizzas',this)">
-        <span class="ic">🍕</span><span id="nav-pizzas-label">Pizzas</span>
+        <span class="ic">🔩</span><span id="nav-pizzas-label">Peças</span>
       </button>
       <button class="nav-btn" onclick="ir('clientes',this)">
         <span class="ic">👥</span><span>Clientes</span>
@@ -114,10 +114,10 @@
             <div class="sub">cadastrados</div>
           </div>
           <div class="stat cb">
-            <span class="ico">🍕</span>
-            <div class="lbl">Pizzas</div>
+            <span class="ico">⚙</span>
+            <div class="lbl">Peças</div>
             <div class="val" id="s-piz">—</div>
-            <div class="sub">no cardápio</div>
+            <div class="sub">no menu</div>
           </div>
           <div class="stat cp">
             <span class="ico">🛵</span>
@@ -170,10 +170,10 @@
     <section id="pg-pizzas" class="secao">
       <div class="pg-header">
         <div>
-          <h2 id="pg-pizzas-titulo">Pizzas</h2>
+          <h2 id="pg-pizzas-titulo">Peças</h2>
           <p id="pg-pizzas-sub">Gerencie o cardápio</p>
         </div>
-        <button class="btn btn-red" id="btn-nova-pizza" onclick="abrirPizza()">+ Nova Pizza</button>
+        <button class="btn btn-red" id="btn-nova-pizza" onclick="abrirPizza()">+ Nova Peça</button>
       </div>
       <div class="pg-body">
         <div class="card">

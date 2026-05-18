@@ -9,6 +9,8 @@
   --gold:    #f5c842;
   --green:   #29c76f;
   --blue:    #3b82f6;
+  --blue2:   #0e2b5a;
+  --blue3:   #18458d;
   --purple:  #8b5cf6;
   --orange:  #ff7d3b;
   --text:    #f0f0f0;
@@ -62,7 +64,7 @@ body {
   font-size: 1.55rem;
   font-weight: 700;
   letter-spacing: -0.3px;
-  color: var(--red);
+  color: var(--blue);
 }
 
 .login-logo p {
@@ -72,9 +74,9 @@ body {
 }
 
 .login-erro {
-  background: rgba(232,55,42,.13);
-  border: 1px solid rgba(232,55,42,.3);
-  color: #ff7e70;
+  background: rgba(48, 18, 105, 0.13);
+  border: 1px solid rgba(55, 37, 158, 0.3);
+  color: #70a2ff;
   padding: 9px 13px;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -111,7 +113,7 @@ body.logado #app        { display: flex; }
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: -0.2px;
-  color: var(--red);  
+  color: var(--blue);  
 }
 
 .sb-user {
@@ -124,8 +126,8 @@ body.logado #app        { display: flex; }
 }
 
 .sb-user .tag {
-  background: rgba(232,55,42,.18);
-  color: var(--red);
+  background: rgba(31, 13, 131, 0.18);
+  color: var(--blue);
   padding: 1px 7px;
   border-radius: 20px;
   font-size: 0.67rem;
@@ -167,7 +169,7 @@ body.logado #app        { display: flex; }
 }
 
 .nav-btn:hover { background: var(--surf2); color: var(--text); }
-.nav-btn.ativo { background: rgba(232,55,42,.11); color: var(--red); }
+.nav-btn.ativo { background: rgba(47, 27, 138, 0.11); color: var(--red); }
 .nav-btn .ic   { font-size: 0.95rem; width: 17px; text-align: center; }
 
 .sb-footer {
@@ -192,7 +194,7 @@ body.logado #app        { display: flex; }
   transition: all .15s;
 }
 
-.btn-logout:hover { border-color: var(--red); color: var(--red); }
+.btn-logout:hover { border-color: var(--blue); color: var(--blue); }
 
 /*  CONTEUDO PRINCIPAL */
 /*  tela alteravel na sidebar */
@@ -236,7 +238,7 @@ body.logado #app        { display: flex; }
 .stat {
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r);
+  border-radius: var(--blue);
   padding: 15px;
   position: relative;
   overflow: hidden;
@@ -250,10 +252,10 @@ body.logado #app        { display: flex; }
 }
 
 /* STaTUS DE INFORMAÇÕES */
-.stat.cr::before { background: var(--red); }
+.stat.cr::before { background: var(--blue); }
 .stat.co::before { background: var(--orange); }
 .stat.cg::before { background: var(--green); }
-.stat.cb::before { background: var(--blue); }
+.stat.cb::before { background: var(--blue2); }
 .stat.cp::before { background: var(--purple); }
 
 .stat .lbl { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
@@ -271,7 +273,7 @@ body.logado #app        { display: flex; }
 .card {
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r);
+  border-radius: var(--blue);
   overflow: hidden;
 }
 
@@ -321,10 +323,10 @@ td { padding: 10px 12px; vertical-align: middle; }
 .b-em_preparo   { background: rgba(245,200,66,.18);  color: var(--gold); }
 .b-saiu_entrega { background: rgba(139,92,246,.18);  color: #c4b5fd; }
 .b-entregue     { background: rgba(41,199,111,.18);  color: var(--green); }
-.b-cancelado    { background: rgba(232,55,42,.18);   color: var(--red); }
+.b-cancelado    { background: rgba(93, 42, 232, 0.18);   color: var(--red); }
 .b-on           { background: rgba(41,199,111,.18);  color: var(--green); }
-.b-off          { background: rgba(232,55,42,.18);   color: var(--red); }
-.b-admin        { background: rgba(232,55,42,.18);   color: var(--red); }
+.b-off          { background: rgba(51, 39, 119, 0.18);   color: var(--blue); }
+.b-admin        { background: rgba(24, 11, 70, 0.18);   color: var(--blue); }
 .b-atend        { background: rgba(59,130,246,.18);  color: #93c5fd; }
 .b-cat          { background: rgba(139,92,246,.13);  color: #c4b5fd; }
 
@@ -344,8 +346,8 @@ td { padding: 10px 12px; vertical-align: middle; }
 }
 
 /* BOTÕES PARA CRIAR NOVO PEDIDO E NOVA PIZZA */
-.btn-red    { background: var(--red);   color: #fff; }
-.btn-red:hover { background: var(--red-dk); }
+.btn-red    { background: var(--blue);   color: #fff; }
+.btn-red:hover { background: var(--blue3); }
 .btn-blue   { background: var(--blue);  color: #fff; }
 .btn-blue:hover { filter: brightness(.9); }
 .btn-green  { background: var(--green); color: #fff; }
@@ -353,8 +355,8 @@ td { padding: 10px 12px; vertical-align: middle; }
 .btn-ghost  { background: var(--surf2); color: var(--text); border: 1px solid var(--border); }
 .btn-ghost:hover { border-color: #555; }
 .btn-sm     { padding: 4px 9px; font-size: 0.73rem; }
-.btn-danger { background: rgba(232,55,42,.1); color: var(--red); }
-.btn-danger:hover { background: rgba(232,55,42,.22); }
+.btn-danger { background: rgba(93, 42, 232, 0.1); color: var(--blue); }
+.btn-danger:hover { background: rgba(42, 45, 232, 0.22); }
 
 .fg { margin-bottom: 11px; }
 
@@ -382,7 +384,7 @@ input, select, textarea {
 
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: var(--red);
+  border-color: var(--blue);
 }
 
 input::placeholder { color: #444; }
@@ -444,10 +446,10 @@ select option { background: var(--surf2); }
 
 /* Botão remover da table */
 .btn-rm {
-  background: rgba(232,55,42,.1);
+  background: rgba(45, 42, 232, 0.1);
   border: none;
   border-radius: 6px;
-  color: var(--red);
+  color: var(--blue);
   font-size: 1.05rem;
   width: 30px; height: 30px;
   cursor: pointer;
@@ -513,7 +515,7 @@ select option { background: var(--surf2); }
 /* POP-UPS DE NOTIFICAÇÃO */
 #toast.show { transform: translateY(0); opacity: 1; }
 #toast.ok   { background: var(--green); color: #fff; }
-#toast.err  { background: var(--red);   color: #fff; }
+#toast.err  { background: var(--blue);   color: #fff; }
 
 .spin-wrap {
   display: flex; align-items: center; gap: 8px;
@@ -525,7 +527,7 @@ select option { background: var(--surf2); }
 .spin {
   width: 14px; height: 14px;
   border: 2px solid var(--border);
-  border-top-color: var(--red);
+  border-top-color: var(--blue);
   border-radius: 50%;
   animation: spin .6s linear infinite;
 }
@@ -549,7 +551,7 @@ select option { background: var(--surf2); }
 .mesa-card {
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r);
+  border-radius: var(--blue3);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -566,7 +568,7 @@ select option { background: var(--surf2); }
 .mesa-num {
   font-size: 1.3rem;
   font-weight: 700;
-  color: var(--red);
+  color: var(--blue3);
   letter-spacing: -0.5px;
 }
 
