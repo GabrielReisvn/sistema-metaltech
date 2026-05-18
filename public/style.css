@@ -80,7 +80,7 @@ body {
 .login-erro {
   background: rgba(232,55,42,.12);
   border: 1px solid rgba(232,55,42,.3);
-  color: #f87171;
+  color: var(--red-inf);
   padding: 9px 13px;
   border-radius: 8px;
   font-size: 0.8rem;
