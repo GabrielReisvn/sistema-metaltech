@@ -127,8 +127,8 @@ function aplicarPerfil(usuario) {
   document.getElementById('sb-perfil').textContent = usuario.perfil;
 
   const perfil  = usuario.perfil;
-  const isAdmin = perfil === 'Administrador';
-  const isGar   = perfil === 'Garcom';
+  const isAdmin = perfil === 'Gerente';
+  const isGar   = perfil === 'Lider';
 
   // fuunção auxiliar para mostrar ou esconder elemento pelo id
   function show(id, visible, type = 'flex') {
