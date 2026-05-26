@@ -44,6 +44,8 @@ body {
 }
 
 .login-box {
+  align-self: center;
+  justify-self: center;
   background: var(--surf);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -591,6 +593,7 @@ select option      { background: var(--surf2); }
     padding: 16px;
     align-items: flex-start;
     padding-top: 40px;
+    min-height: 70vh;
   }
 
   .login-box {
