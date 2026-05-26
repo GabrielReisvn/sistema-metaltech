@@ -580,49 +580,389 @@ select option      { background: var(--surf2); }
 
 .empty .ei { font-size: 2rem; display: block; margin-bottom: 7px; }
 
-/* ============================================================
-   RESPONSIVIDADE
-   ============================================================ */
-@media (max-width: 860px) {
- /*==============================
-         TELA LOGIN 
-   ==============================*/
-  #tela-login{min-height: 90vh;}
-  #tela-login .login-box { width: 85%;}
 
-  /*==============================
-         DASHBOARD/SIDEBAR
-   ==============================*/
+
+@media (max-width: 860px) {
+
+  /* ==============================
+     TELA DE LOGIN
+     ============================== */
+  #tela-login {
+    padding: 16px;
+    align-items: flex-start;
+    padding-top: 40px;
+  }
+
+  .login-box {
+    padding: 28px 20px;
+    border-radius: 12px;
+  }
+
+  .login-logo .em { font-size: 2.2rem; }
+  .login-logo h1  { font-size: 1.3rem; }
+
+  /* ==============================
+     SIDEBAR RECOLHIDA
+     ============================== */
   #sidebar { width: 52px; }
+
   #sidebar .sb-logo h1,
   #sidebar .sb-user,
   #sidebar .nav-btn span:not(.ic),
-  #sidebar .sb-group span,
   #sidebar .sb-group,
+  #sidebar .sb-group span,
   #sidebar .sb-footer span { display: none; }
-  #sidebar .sb-logo { padding: 14px 8px; }
-  #conteudo         { margin-left: 52px; }
-  .dash-grid        { grid-template-columns: 1fr; }
-  .fr2, .fr3        { grid-template-columns: 1fr; }
-  .pg-body          { padding: 14px; }
-  .item-row         { grid-template-columns: 1fr 60px 50px 70px 30px; }
-  #sidebar .sb-footer{ padding: 5px 6px ;}
- 
-  /*==============================
-        ORDEM DE PRODUÇÃO
-   ==============================*/
-  .pg-header{
-    width: 50% ;gap: 20px;}
-    .ordem-org{grid-template-columns:1fr 35px 30px 40px 15px;gap:6px;font-size:.65rem;}
 
-  /*==============================
-        CLIENTES
-   ==============================*/
+  #sidebar .sb-logo  { padding: 14px 8px; }
+  #sidebar .sb-footer{ padding: 5px 6px; }
+  #sidebar .nav-btn  { justify-content: center; padding: 10px 0; }
+  #sidebar .nav-btn .ic { width: auto; font-size: 1.1rem; }
 
+  /* ==============================
+     CONTEÚDO
+     ============================== */
+  #conteudo { margin-left: 52px; }
 
-  /*==============================
-        PRODUTOS/PEÇAS
-   ==============================*/
+  .pg-header        { padding: 16px 14px 0; gap: 8px; }
+  .pg-header h2     { font-size: 1.15rem; }
+  .pg-body          { padding: 12px 14px 20px; }
 
+  /* ==============================
+     DASHBOARD
+     ============================== */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
 
+  .stat .val { font-size: 1.4rem; }
+  .stat .ico { font-size: 1.1rem; }
+
+  .dash-grid { grid-template-columns: 1fr; }
+
+  /* ==============================
+     TABELAS GENÉRICAS — scroll
+     (dashboard, usuários)
+     ============================== */
+  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* ==============================
+     ORDENS DE PRODUÇÃO — cards
+     Colunas: # | Cliente | Prazo | Líder | Prioridade | Total | Status | Ações
+     ============================== */
+  #pg-ordens .pg-header { flex-direction: column; align-items: flex-start; }
+  #pg-ordens .pg-header > div:last-child { width: 100%; display: flex; gap: 6px; }
+  #pg-ordens .pg-header > div:last-child > * { flex: 1; justify-content: center; }
+
+  #filtro-status { width: 100%; text-align: left; }
+
+  #tbl-ordens table,
+  #tbl-ordens thead { display: none; }
+
+  #tbl-ordens .ordem-card {
+    background: var(--surf2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 10px;
+  }
+
+  #tbl-ordens .oc-numero {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+  }
+
+  #tbl-ordens .oc-cliente {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text);
+    grid-column: 1;
+  }
+
+  #tbl-ordens .oc-status  { grid-column: 2; grid-row: 1 / 3; align-self: center; }
+
+  #tbl-ordens .oc-meta {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  #tbl-ordens .oc-pill {
+    background: var(--surf);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 0.69rem;
+    color: var(--muted);
+  }
+
+  #tbl-ordens .oc-pill strong { color: var(--text); }
+
+  #tbl-ordens .oc-acoes {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  #tbl-ordens .oc-acoes .btn { flex: 1; justify-content: center; font-size: 0.76rem; }
+
+  /* ==============================
+     CLIENTES — cards
+     Colunas: Nome | CNPJ | Telefone | E-mail | Observações | Ações
+     ============================== */
+  #busca-cli { max-width: 100%; }
+
+  #tbl-clientes table,
+  #tbl-clientes thead { display: none; }
+
+  #tbl-clientes .cli-card {
+    background: var(--surf2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  #tbl-clientes .cc-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  #tbl-clientes .cc-nome {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  #tbl-clientes .cc-cnpj {
+    font-size: 0.69rem;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  #tbl-clientes .cc-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: 0.73rem;
+    color: var(--muted);
+  }
+
+  #tbl-clientes .cc-obs {
+    font-size: 0.71rem;
+    color: var(--muted);
+    font-style: italic;
+    border-top: 1px solid var(--border);
+    padding-top: 5px;
+    margin-top: 2px;
+  }
+
+  #tbl-clientes .cc-acoes {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  #tbl-clientes .cc-acoes .btn { flex: 1; justify-content: center; font-size: 0.76rem; }
+
+  /* ==============================
+     PRODUTOS / PEÇAS — cards
+     Colunas: Nome | Código | Categoria | Unidade |
+              Peso | Tempo | Preço | Status | Ações
+     ============================== */
+  #tbl-produtos table,
+  #tbl-produtos thead { display: none; }
+
+  #tbl-produtos .prod-card {
+    background: var(--surf2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+
+  #tbl-produtos .pc-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  #tbl-produtos .pc-nome {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  #tbl-produtos .pc-cod {
+    font-size: 0.69rem;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  #tbl-produtos .pc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 10px;
+    margin-bottom: 8px;
+  }
+
+  #tbl-produtos .pc-item {
+    font-size: 0.71rem;
+    color: var(--muted);
+  }
+
+  #tbl-produtos .pc-item strong { color: var(--text); display: block; font-size: 0.78rem; }
+
+  #tbl-produtos .pc-acoes {
+    display: flex;
+    gap: 6px;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+  }
+
+  #tbl-produtos .pc-acoes .btn { flex: 1; justify-content: center; font-size: 0.76rem; }
+
+  /* ==============================
+     ESTOQUE — cards
+     Colunas: Nome | Código | Unidade |
+              Estoque | Mín. | Preço | Fornecedor | Alerta
+     ============================== */
+  #tbl-estoque table,
+  #tbl-estoque thead { display: none; }
+
+  #tbl-estoque .est-card {
+    background: var(--surf2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 10px;
+  }
+
+  #tbl-estoque .ec-nome {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text);
+    grid-column: 1;
+  }
+
+  #tbl-estoque .ec-alerta { grid-column: 2; grid-row: 1 / 3; align-self: center; }
+
+  #tbl-estoque .ec-cod {
+    font-size: 0.69rem;
+    color: var(--muted);
+    grid-column: 1;
+  }
+
+  #tbl-estoque .ec-grid {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  #tbl-estoque .ec-item {
+    font-size: 0.69rem;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  #tbl-estoque .ec-item strong {
+    display: block;
+    font-size: 0.88rem;
+    color: var(--text);
+    margin-bottom: 1px;
+  }
+
+  #tbl-estoque .ec-fornecedor {
+    grid-column: 1 / -1;
+    font-size: 0.69rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* ==============================
+     FORMULÁRIOS E GRIDS
+     ============================== */
+  .fr2, .fr3 { grid-template-columns: 1fr; }
+
+  /* ==============================
+     MODAIS
+     ============================== */
+  .modal-bg { padding: 10px; align-items: flex-end; }
+
+  .modal, .modal.lg {
+    max-width: 100%;
+    max-height: 88vh;
+    border-radius: 16px 16px 0 0;
+    padding: 18px 16px;
+  }
+
+  .modal h3 { font-size: 0.95rem; margin-bottom: 12px; }
+
+  /* Itens da ordem — colapsa colunas pequenas */
+  .item-row {
+    grid-template-columns: 1fr 55px 50px 65px 28px;
+    gap: 4px;
+  }
+
+  .modal-foot { gap: 6px; }
+  .modal-foot .btn { flex: 1; justify-content: center; }
+
+  /* ==============================
+     BOTÕES E AÇÕES
+     ============================== */
+  .btn-sm { padding: 5px 8px; font-size: 0.7rem; }
+
+  /* Botão de nova ordem/produto — full width em mobile */
+  .pg-header .btn:not(.btn-sm):not(.btn-ghost) {
+    padding: 8px 12px;
+    font-size: 0.78rem;
+  }
+
+  /* ==============================
+     CARD DO DASHBOARD
+     ============================== */
+  .card-head h3   { font-size: 0.8rem; }
+  .card-body      { padding: 10px 12px; }
+
+  .mini-row       { padding: 6px 0; }
+  .mini-row .mn   { font-size: 0.73rem; }
+  .mini-row .mc   { font-size: 0.67rem; }
+}
+
+/* ==============================
+   TELAS MUITO PEQUENAS (< 400px)
+   ============================== */
+@media (max-width: 400px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .stat .val  { font-size: 1.2rem; }
+  .pg-header h2 { font-size: 1rem; }
+
+  .item-row {
+    grid-template-columns: 1fr 48px 42px 60px 26px;
+  }
+
+  .modal { padding: 14px 12px; }
 }

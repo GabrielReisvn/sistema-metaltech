@@ -4,6 +4,9 @@
 
 const API = '/api';
 
+// Detecção de viewport mobile (sincronizada com o breakpoint do CSS)
+const isMobile = () => window.innerWidth <= 860;
+
 // Cache local para evitar múltiplas requisições desnecessárias
 let cProdutos = [];
 let cClientes = [];
@@ -57,7 +60,6 @@ async function fazerLogin() {
   }
 }
 
-// função para realizar logout, limpando os dados armazenados e atualizando a interface
 function sair() {
   TOKEN = '';
   USUARIO_LOGADO = null;
@@ -119,7 +121,6 @@ document.querySelectorAll('.modal-bg').forEach(bg =>
   bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('open'); })
 );
 
-// função para formatar valores para moeda brasileira, convertendo ponto para vírgula e adicionando o prefixo 'R$'
 function R$(v) {
   return 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',');
 }
@@ -277,6 +278,32 @@ async function carregarOrdens() {
       return;
     }
 
+    if (isMobile()) {
+      el.innerHTML = ordens.map(o => `
+        <div class="ordem-card">
+          <div class="oc-numero">#${String(o.numeroOrdem||'?').padStart(3,'0')}</div>
+          <div class="oc-status">${badgeStatus(o.status)}</div>
+          <div class="oc-cliente">${o.cliente?.nome || '—'}</div>
+          <div class="oc-meta">
+            <span class="oc-pill">📅 <strong>${o.prazoEntrega || '—'}</strong></span>
+            <span class="oc-pill">🔧 <strong>${o.lider?.nome || 'Sem líder'}</strong></span>
+            <span class="oc-pill">${badgePrioridade(o.prioridade)}</span>
+            <span class="oc-pill">💰 <strong style="color:var(--gold)">${R$(o.total)}</strong></span>
+          </div>
+          <div class="oc-acoes">
+            <button class="btn btn-blue btn-sm"
+              onclick="abrirStatus('${o.id}','${o.status}','${(o.cliente?.nome||'').replace(/'/g,"\\'")}')">
+              📝 Status
+            </button>
+            <button class="btn btn-danger btn-sm"
+              onclick="deletarOrdem('${o.id}','${o.numeroOrdem}')">
+              🗑️ Excluir
+            </button>
+          </div>
+        </div>`).join('');
+      return;
+    }
+
     el.innerHTML = `
       <table>
         <thead>
@@ -301,7 +328,7 @@ async function carregarOrdens() {
               <td>
                 <div style="display:flex;gap:5px">
                   <button class="btn btn-blue btn-sm"
-                    onclick="abrirStatus('${o.id}','${o.status}','${o.cliente?.nome || ''}')">
+                    onclick="abrirStatus('${o.id}','${o.status}','${(o.cliente?.nome||'').replace(/'/g,"\\'")}')">
                     📝
                   </button>
                   <button class="btn btn-danger btn-sm"
@@ -465,6 +492,34 @@ async function carregarProdutos() {
       el.innerHTML = '<div class="empty"><span class="ei">🔩</span>Nenhum produto cadastrado</div>';
       return;
     }
+
+    if (isMobile()) {
+      el.innerHTML = cProdutos.map(p => `
+        <div class="prod-card">
+          <div class="pc-head">
+            <div>
+              <div class="pc-nome">${p.nome}</div>
+              <div class="pc-cod">${p.codigo} · <span class="badge b-cat">${p.categoria}</span></div>
+            </div>
+            <span class="badge ${p.disponivel ? 'b-on' : 'b-off'}">
+              ${p.disponivel ? '✅' : '❌'}
+            </span>
+          </div>
+          <div class="pc-grid">
+            <div class="pc-item"><strong>${R$(p.precoUnitario)}</strong>Preço unit.</div>
+            <div class="pc-item"><strong>${p.unidadeMedida}</strong>Unidade</div>
+            <div class="pc-item"><strong>${p.pesoEstimadoKg ?? '—'} kg</strong>Peso est.</div>
+            <div class="pc-item"><strong>${p.tempoProducaoH ?? '—'} h</strong>Tempo prod.</div>
+          </div>
+          <div class="pc-acoes">
+            <button class="btn btn-ghost btn-sm" onclick="editarProduto(${p.id})">✏️ Editar</button>
+            <button class="btn btn-danger btn-sm"
+              onclick="deletarProduto(${p.id},'${p.nome.replace(/'/g,"\\'")}')">🗑️ Desativar</button>
+          </div>
+        </div>`).join('');
+      return;
+    }
+
     el.innerHTML = `
       <table>
         <thead>
@@ -497,7 +552,7 @@ async function carregarProdutos() {
                   <button class="btn btn-ghost btn-sm"
                     onclick="editarProduto(${p.id})">✏️</button>
                   <button class="btn btn-danger btn-sm"
-                    onclick="deletarProduto(${p.id},'${p.nome}')">🗑️</button>
+                    onclick="deletarProduto(${p.id},'${p.nome.replace(/'/g,"\\'")}')">🗑️</button>
                 </div>
               </td>
             </tr>`).join('')}
@@ -589,6 +644,29 @@ async function carregarClientes(busca = '') {
       return;
     }
 
+    if (isMobile()) {
+      el.innerHTML = cClientes.map(c => `
+        <div class="cli-card">
+          <div class="cc-head">
+            <div>
+              <div class="cc-nome">${c.nome}</div>
+              <div class="cc-cnpj">${c.cnpjCpf || '—'}</div>
+            </div>
+            <div style="display:flex;gap:5px;flex-shrink:0">
+              <button class="btn btn-ghost btn-sm" onclick="editarCliente(${c.id})">✏️</button>
+              <button class="btn btn-danger btn-sm"
+                onclick="deletarCliente(${c.id},'${c.nome.replace(/'/g,"\\'")}')">🗑️</button>
+            </div>
+          </div>
+          <div class="cc-info">
+            ${c.telefone ? `<span>📞 ${c.telefone}</span>` : ''}
+            ${c.email    ? `<span>✉️ ${c.email}</span>`    : ''}
+          </div>
+          ${c.observacoes ? `<div class="cc-obs">💬 ${c.observacoes}</div>` : ''}
+        </div>`).join('');
+      return;
+    }
+
     el.innerHTML = `
       <table>
         <thead>
@@ -627,7 +705,6 @@ function buscarCli(v) {
   _tBusca = setTimeout(() => carregarClientes(v), 400);
 }
 
-// função para abrir modal de criação ou edição de cliente, preenchendo os campos com os dados do cliente selecionado ou deixando em branco para novo cliente
 function abrirCliente() {
   document.getElementById('m-cli-t').textContent = 'Novo Cliente';
   ['c-id','c-nome','c-cnpj','c-tel','c-email',
@@ -707,6 +784,38 @@ async function carregarEstoque() {
       el.innerHTML = '<div class="empty"><span class="ei">📦</span>Nenhuma matéria-prima</div>';
       return;
     }
+
+    if (isMobile()) {
+      el.innerHTML = materias.map(m => {
+        const baixo = m.quantidadeEstoque <= m.quantidadeMinima;
+        return `
+          <div class="est-card">
+            <div class="ec-nome">${m.nome}</div>
+            <div class="ec-alerta">
+              ${baixo
+                ? '<span class="badge b-cancelado">⚠️ Repor</span>'
+                : '<span class="badge b-finalizado">OK</span>'}
+            </div>
+            <div class="ec-cod">${m.codigo}</div>
+            <div class="ec-grid">
+              <div class="ec-item">
+                <strong style="color:${baixo ? 'var(--red)' : 'var(--green)'}">
+                  ${m.quantidadeEstoque} ${m.unidadeMedida}
+                </strong>Estoque
+              </div>
+              <div class="ec-item">
+                <strong>${m.quantidadeMinima} ${m.unidadeMedida}</strong>Mínimo
+              </div>
+              <div class="ec-item">
+                <strong>${R$(m.precoUnitario)}</strong>Preço unit.
+              </div>
+            </div>
+            ${m.fornecedor ? `<div class="ec-fornecedor">🏢 ${m.fornecedor}</div>` : ''}
+          </div>`;
+      }).join('');
+      return;
+    }
+
     el.innerHTML = `
       <table>
         <thead>
