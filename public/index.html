@@ -32,9 +32,9 @@
         onkeydown="if(event.key==='Enter') fazerLogin()">
     </div>
     <button class="btn btn-red" id="btn-login"
-      style="width:100%;padding:10px;margin-top:4px;text-align:center"
+      style=" display:flex; justify-self:center; justify-content:center; width:50%;padding:10px;margin-top:4px;text-align:center"
       onclick="fazerLogin()">
-      Entrar
+      <span>Entrar</span>
     </button>
     <p style="text-align:center;font-size:.69rem;color:var(--muted);margin-top:14px">
       Rode <strong style="color:var(--text)">node seed.js</strong> para criar os usuários iniciais
@@ -79,7 +79,7 @@
       </button>
 
       <!-- Visível apenas para Gerente -->
-      <div class="sb-group" id="menu-usuarios" style="display:none">Sistema</div>
+      <div class="sb-group" id="menu-usuarios" style="display:none"><span>Sistema</span></div>
       <button class="nav-btn" id="btn-usuarios" onclick="ir('usuarios', this)"
         style="display:none">
         <span class="ic">🔐</span><span>Usuários</span>
@@ -279,7 +279,7 @@
       <label style="margin-bottom:0;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.3px">Itens da Ordem</label>
       <button class="btn btn-ghost btn-sm" onclick="addItemOrdem()">+ Peça</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 70px 60px 80px 30px;gap:6px;font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;padding:0 1px">
+    <div class="ordem-org" style="display:grid;grid-template-columns:1fr 70px 60px 80px 30px;gap:6px;font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;padding:0 1px">
       <span>Produto</span><span>Qtd</span><span>Un.</span><span>Subtotal</span><span></span>
     </div>
     <div id="itens-ordem-lista"></div>

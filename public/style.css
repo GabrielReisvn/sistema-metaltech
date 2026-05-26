@@ -584,10 +584,20 @@ select option      { background: var(--surf2); }
    RESPONSIVIDADE
    ============================================================ */
 @media (max-width: 860px) {
+ /*==============================
+         TELA LOGIN 
+   ==============================*/
+  #tela-login{min-height: 90vh;}
+  #tela-login .login-box { width: 85%;}
+
+  /*==============================
+         DASHBOARD/SIDEBAR
+   ==============================*/
   #sidebar { width: 52px; }
   #sidebar .sb-logo h1,
   #sidebar .sb-user,
   #sidebar .nav-btn span:not(.ic),
+  #sidebar .sb-group span,
   #sidebar .sb-group,
   #sidebar .sb-footer span { display: none; }
   #sidebar .sb-logo { padding: 14px 8px; }
@@ -596,4 +606,23 @@ select option      { background: var(--surf2); }
   .fr2, .fr3        { grid-template-columns: 1fr; }
   .pg-body          { padding: 14px; }
   .item-row         { grid-template-columns: 1fr 60px 50px 70px 30px; }
+  #sidebar .sb-footer{ padding: 5px 6px ;}
+ 
+  /*==============================
+        ORDEM DE PRODUÇÃO
+   ==============================*/
+  .pg-header{
+    width: 50% ;gap: 20px;}
+    .ordem-org{grid-template-columns:1fr 35px 30px 40px 15px;gap:6px;font-size:.65rem;}
+
+  /*==============================
+        CLIENTES
+   ==============================*/
+
+
+  /*==============================
+        PRODUTOS/PEÇAS
+   ==============================*/
+
+
 }
