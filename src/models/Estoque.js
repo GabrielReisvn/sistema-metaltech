@@ -1,38 +1,42 @@
-const {readyquery, run, get } = require('../database/sqlite');
- 
-//MODEL ESTOQUE
+const { ready, query, run, get } = require('../database/sqlite');
 
-function materiaPrima(row) {
+// ----------------------------------------------------------------
+// FORMATADORES
+// ----------------------------------------------------------------
+
+function formatarMateriaPrima(row) {
   if (!row) return null;
   return {
-    id : row.id,
-    nome : row.nome,
-    codigo : row.codigo,
-    unidadeMedida : row.unidadeMedida,
-    quantidadeEstoque : row.quantidadeEstoque,
-      quantidadeMinima : row.quantidadeMinima,
-      preçoUnitario : row.preçoUnitario,
-      //flag calculada
-      estoqueBaixo : row.quantidadeEstoque <= row.quantidadeMinima,
-      createdAt : row.createdAt,
-      updatedAt : row.updatedAt
+    id:                 row.id,
+    nome:               row.nome,
+    codigo:             row.codigo,
+    unidadeMedida:      row.unidade_medida,
+    quantidadeEstoque:  row.quantidade_estoque,
+    quantidadeMinima:   row.quantidade_minima,
+    precoUnitario:      row.preco_unitario,
+    fornecedor:         row.fornecedor,
+    observacoes:        row.observacoes,
+    // Flag calculada: true quando estoque atingiu ou passou do mínimo
+    estoqueBaixo:       row.quantidade_estoque <= row.quantidade_minima,
+    createdAt:          row.created_at,
+    updatedAt:          row.updated_at,
+  };
+}
 
-  }
-};
 function formatarMovimentacao(row) {
   if (!row) return null;
   return {
-    id : row.id,
-    materiaPrimaId : row.materiaPrimaId,
-    materiaPrimaNome : row.mpNome,
-    ordemId : row.ordemId,
-    numeroOrdem : row.numeroOrdem,
-    tipo : row.tipo,
-    quantidade : row.quantidade,
-    observacoes : row.observacoes,
-    usuarioId : row.usuarioId,
-    usuarioNome : row.usuarioNome,
-    createdAt : row.createdAt
+    id:              row.id,
+    materiaPrimaId:  row.materia_prima_id,
+    materiaPrima:    row.mp_nome   || null,   
+    ordemId:         row.ordem_id  || null,
+    numeroOrdem:     row.num_ordem || null,   
+    tipo:            row.tipo,               
+    quantidade:      row.quantidade,
+    observacoes:     row.observacoes,
+    usuarioId:       row.usuario_id,
+    usuarioNome:     row.usu_nome  || null,   
+    createdAt:       row.created_at,
   };
 }
 
@@ -40,7 +44,7 @@ function formatarMovimentacao(row) {
 // MODEL — MATÉRIAS-PRIMAS
 // ----------------------------------------------------------------
 const MateriaPrima = {
- 
+
   // Lista todas as matérias-primas — opcionalmente filtra as com estoque baixo
   async findAll({ apenasEstoqueBaixo = false } = {}) {
     await ready;
@@ -49,21 +53,21 @@ const MateriaPrima = {
       : 'SELECT * FROM materias_primas ORDER BY nome';
     return query(sql).map(formatarMateriaPrima);
   },
- 
+
   async findById(id) {
     await ready;
     return formatarMateriaPrima(
       get('SELECT * FROM materias_primas WHERE id = ?', [id])
     );
   },
- 
+
   async findByCodigo(codigo) {
     await ready;
     return formatarMateriaPrima(
       get('SELECT * FROM materias_primas WHERE codigo = ?', [codigo])
     );
   },
- 
+
   // Cria uma nova matéria-prima — codigo deve ser único
   async create({
     nome,
@@ -87,7 +91,7 @@ const MateriaPrima = {
     );
     return this.findById(info.lastInsertRowid);
   },
- 
+
   // Atualiza apenas os campos enviados (patch parcial)
   async update(id, {
     nome, codigo, unidadeMedida, quantidadeMinima,
@@ -96,7 +100,7 @@ const MateriaPrima = {
     await ready;
     const atual = get('SELECT * FROM materias_primas WHERE id = ?', [id]);
     if (!atual) return null;
- 
+
     run(`
       UPDATE materias_primas SET
         nome               = ?,
@@ -118,16 +122,16 @@ const MateriaPrima = {
       observacoes     ?? atual.observacoes,
       id,
     ]);
- 
+
     return this.findById(id);
   },
- 
+
   // ----------------------------------------------------------------
   // MOVIMENTAÇÕES DE ESTOQUE
   // Registra entrada (compra/reposição) ou saída (consumo em ordem)
   // Atualiza o saldo de quantidade_estoque automaticamente
   // ----------------------------------------------------------------
- 
+
   // Lista movimentações de uma matéria-prima específica
   async findMovimentacoes(materiaPrimaId, { limite = 50 } = {}) {
     await ready;
@@ -148,7 +152,7 @@ const MateriaPrima = {
     );
     return rows.map(formatarMovimentacao);
   },
- 
+
   // Lista todas as movimentações (visão geral do gerente)
   async findTodasMovimentacoes({ limite = 100 } = {}) {
     await ready;
@@ -168,7 +172,7 @@ const MateriaPrima = {
     );
     return rows.map(formatarMovimentacao);
   },
- 
+
   // Registra uma movimentação e atualiza o saldo do estoque
   async registrarMovimentacao({
     materiaPrimaId,
@@ -179,17 +183,17 @@ const MateriaPrima = {
     usuarioId  = null,
   }) {
     await ready;
- 
+
     if (!['entrada', 'saida'].includes(tipo)) {
       throw new Error('Tipo de movimentação inválido. Use "entrada" ou "saida".');
     }
     if (!quantidade || quantidade <= 0) {
       throw new Error('Quantidade deve ser maior que zero.');
     }
- 
+
     const mp = get('SELECT * FROM materias_primas WHERE id = ?', [materiaPrimaId]);
     if (!mp) throw new Error(`Matéria-prima ID ${materiaPrimaId} não encontrada.`);
- 
+
     // Impede saída maior do que o saldo disponível
     if (tipo === 'saida' && quantidade > mp.quantidade_estoque) {
       throw new Error(
@@ -197,11 +201,11 @@ const MateriaPrima = {
         `solicitado: ${quantidade} ${mp.unidade_medida}.`
       );
     }
- 
+
     // Calcula novo saldo
     const delta      = tipo === 'entrada' ? quantidade : -quantidade;
     const novoSaldo  = mp.quantidade_estoque + delta;
- 
+
     // Persiste a movimentação
     const infoMov = run(
       `INSERT INTO movimentacoes_estoque
@@ -209,7 +213,7 @@ const MateriaPrima = {
        VALUES (?, ?, ?, ?, ?, ?)`,
       [materiaPrimaId, ordemId, tipo, quantidade, observacoes.trim(), usuarioId]
     );
- 
+
     // Atualiza o saldo na tabela de matérias-primas
     run(
       `UPDATE materias_primas
@@ -218,7 +222,7 @@ const MateriaPrima = {
         WHERE id = ?`,
       [novoSaldo, materiaPrimaId]
     );
- 
+
     return {
       movimentacaoId: infoMov.lastInsertRowid,
       tipo,
@@ -229,5 +233,5 @@ const MateriaPrima = {
     };
   },
 };
- 
+
 module.exports = MateriaPrima;
