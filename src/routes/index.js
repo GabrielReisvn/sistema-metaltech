@@ -9,6 +9,7 @@ const auth          = require('../middlewares/auth');
 const Usuario       = require('../models/Usuario');
 const Produto       = require('../models/Produto');
 const Cliente       = require('../models/Cliente');
+const Estoque       = require('../models/Estoque');
 const OrdemProducao = require('../models/OrdemProducao');
 
 // ================================================================
@@ -253,6 +254,109 @@ router.delete('/ordens/:id', auth, async (req, res) => {
     res.status(400).json({ erro: e.message });
   }
 });
+// ================================================================
+// MATÉRIAS-PRIMAS E ESTOQUE
+// ================================================================
+ 
+// GET /materias-primas — lista todas; aceita ?apenasEstoqueBaixo=true
+router.get('/materias-primas', auth, async (req, res) => {
+  try {
+    const filtros = {
+      apenasEstoqueBaixo: req.query.apenasEstoqueBaixo === 'true',
+    };
+    res.json(await MateriaPrima.findAll(filtros));
+  } catch (e) { res.status(500).json({ erro: e.message }); }
+});
+ 
+// GET /materias-primas/:id
+router.get('/materias-primas/:id', auth, async (req, res) => {
+  try {
+    const mp = await MateriaPrima.findById(req.params.id);
+    if (!mp) return res.status(404).json({ erro: 'Matéria-prima não encontrada' });
+    res.json(mp);
+  } catch (e) { res.status(500).json({ erro: e.message }); }
+});
+ 
+// POST /materias-primas — somente Gerente cadastra
+router.post('/materias-primas', auth, async (req, res) => {
+  try {
+    if (req.usuario.perfil !== 'Gerente')
+      return res.status(403).json({ erro: 'Acesso restrito a Gerentes' });
+ 
+    const { nome, codigo } = req.body;
+    if (!nome || !codigo)
+      return res.status(400).json({ erro: 'Nome e código são obrigatórios' });
+ 
+    res.status(201).json(await MateriaPrima.create(req.body));
+  } catch (e) {
+    if (e.message?.includes('UNIQUE'))
+      return res.status(400).json({ erro: 'Código de matéria-prima já cadastrado' });
+    res.status(500).json({ erro: e.message });
+  }
+});
+ 
+// PUT /materias-primas/:id — somente Gerente
+router.put('/materias-primas/:id', auth, async (req, res) => {
+  try {
+    if (req.usuario.perfil !== 'Gerente')
+      return res.status(403).json({ erro: 'Acesso restrito a Gerentes' });
+ 
+    const mp = await MateriaPrima.update(req.params.id, req.body);
+    if (!mp) return res.status(404).json({ erro: 'Matéria-prima não encontrada' });
+    res.json(mp);
+  } catch (e) { res.status(500).json({ erro: e.message }); }
+});
+ 
+// GET /materias-primas/:id/movimentacoes — histórico de uma MP
+router.get('/materias-primas/:id/movimentacoes', auth, async (req, res) => {
+  try {
+    const limite = parseInt(req.query.limite) || 50;
+    res.json(await MateriaPrima.findMovimentacoes(req.params.id, { limite }));
+  } catch (e) { res.status(500).json({ erro: e.message }); }
+});
+ 
+// GET /movimentacoes — visão geral de todas as movimentações (somente Gerente)
+router.get('/movimentacoes', auth, async (req, res) => {
+  try {
+    if (req.usuario.perfil !== 'Gerente')
+      return res.status(403).json({ erro: 'Acesso restrito a Gerentes' });
+ 
+    const limite = parseInt(req.query.limite) || 100;
+    res.json(await MateriaPrima.findTodasMovimentacoes({ limite }));
+  } catch (e) { res.status(500).json({ erro: e.message }); }
+});
+ 
+// POST /materias-primas/:id/movimentacoes — registra entrada ou saída
+router.post('/materias-primas/:id/movimentacoes', auth, async (req, res) => {
+  try {
+    const { tipo, quantidade, ordemId, observacoes } = req.body;
+    if (!tipo || !quantidade)
+      return res.status(400).json({ erro: 'Tipo e quantidade são obrigatórios' });
+ 
+    const resultado = await MateriaPrima.registrarMovimentacao({
+      materiaPrimaId: req.params.id,
+      tipo,
+      quantidade:     parseFloat(quantidade),
+      ordemId:        ordemId || null,
+      observacoes:    observacoes || '',
+      usuarioId:      req.usuario.id,
+    });
+ 
+    // Avisa se o estoque ficou abaixo do mínimo após a saída
+    if (resultado.estoqueBaixo) {
+      return res.status(201).json({
+        ...resultado,
+        aviso: '⚠️ Estoque abaixo do mínimo após esta movimentação. Considere repor.',
+      });
+    }
+ 
+    res.status(201).json(resultado);
+  } catch (e) {
+    // Erros de negócio (saldo insuficiente, tipo inválido) → 400
+    res.status(400).json({ erro: e.message });
+  }
+});
+ 
 
 // ================================================================
 // USUÁRIOS — somente Gerente gerencia usuários
