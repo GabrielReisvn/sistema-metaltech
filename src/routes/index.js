@@ -9,8 +9,8 @@ const auth          = require('../middlewares/auth');
 const Usuario       = require('../models/Usuario');
 const Produto       = require('../models/Produto');
 const Cliente       = require('../models/Cliente');
-const Estoque       = require('../models/Estoque');
 const OrdemProducao = require('../models/OrdemProducao');
+const MateriaPrima  = require('../models/MateriaPrima');
 
 // ================================================================
 // AUTH
