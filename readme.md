@@ -169,7 +169,7 @@ Permissões: disponível para atendentes/garçons; administradores também.
 ## **_Estoque/Materia Prima_** 📦
 
 <img src="./img/clientes.png" width="500" height="auto">
-
+```
 
 Objetivo: gerenciar cadastro do estoque (endereços, telefone, observações).
 
