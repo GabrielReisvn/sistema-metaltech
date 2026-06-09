@@ -35,8 +35,9 @@ src/
     auth.js
   models/
     Cliente.js
-    Pedido.js
-    Pizza.js
+    MateriaPrima.js
+    OrdemProducao.js
+    Produto.js
     Usuario.js
     
   routes/
@@ -46,9 +47,9 @@ src/
 - Arquivos exemplares:
   - `src/database/sqlite.js`
   - `src/middlewares/auth.js`
-  - `src/models/Cliente.js`, `src/models/Pedido.js`, `src/models/Pizza.js`, `src/models/Usuario.js`
+  - `src/models/Cliente.js`, `src/models/Produto.js`, `src/models/OrdemProducao.js`, `src/models/Usuario.js`
 
-- Arquivo do banco (não versionado): `pizzaria.db`
+- Arquivo do banco (não versionado): `metaltech.db`
 
 # EXPLICANDO ARQUIVOS
 
@@ -61,13 +62,13 @@ src/
 - `pizzaria.db` — arquivo SQLite gerado por `sql.js` (não versionar).
 
 - `src/database/sqlite.js` — inicializa `sql.js`, cria o arquivo de DB (`DB_PATH`) se necessário, cria as tabelas e exporta `ready` (Promise) e os helpers `query`, `get`, `run`, `salvar`.
-  - Observação: `run()` grava alterações e chama `salvar()` para persistir o arquivo `pizzaria.db`.
+  - Observação: `run()` grava alterações e chama `salvar()` para persistir o arquivo `metaltech.db`.
 
 - `src/middlewares/auth.js` — middleware JWT: extrai `Authorization: Bearer <token>`, valida com `process.env.JWT_SECRET` e popula `req.usuario` com o payload.
 
 - `src/models/Usuario.js` — modelo de usuários. Métodos: `findAll`, `findByEmail`, `findById`, `create`, `update`, `delete`, `verificarSenha`. Usa `bcryptjs` para hashing e formata a saída (ex.: `ativo` → booleano).
 
-- `src/models/Pizza.js` — modelo de pizzas: campos como `nome`, `ingredientes`, `precos` (JSON). Implementa operações CRUD via os helpers do DB.
+- `src/models/Produto.js` — modelo de produtos: campos como `nome`, `ingredientes`, `precos` (JSON). Implementa operações CRUD via os helpers do DB.
 
 - `src/models/Cliente.js` — modelo de clientes: CRUD básico e busca por critérios (ex.: `busca` query em rotas).
 
