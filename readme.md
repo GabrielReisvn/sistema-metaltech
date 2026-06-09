@@ -164,12 +164,13 @@ Ações:
   - Remover ou marcar como inativo.
 
 Permissões: disponível para atendentes/garçons; administradores também.
+```
 
-## **_Estoque/Materia Prima_** 👥
+## **_Estoque/Materia Prima_** 📦
 
 <img src="./img/clientes.png" width="500" height="auto">
 
-``` 
+
 Objetivo: gerenciar cadastro do estoque (endereços, telefone, observações).
 
 Elementos principais: lista de materia prima, busca incremental, modal de criação/edição, botão deletar.
