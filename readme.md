@@ -186,8 +186,8 @@ Permissões: disponível para gerentes;
 ## **_Usuários_** 🔐
 
 <img src="./img/suarios.png" width="500" height="auto">
-
 ```
+
 Objetivo: administração de contas do sistema (somente para administradores).
 
 Elementos principais: tabela de usuários com perfil, status (ativo/inativo), botões criar/editar/excluir.
@@ -198,5 +198,4 @@ Ações:
   - Restrições: rota protegida por middleware JWT e autorização por perfil.
  
 Permissões: apenas gerentes podem acessar e modificar.
-
 ```
