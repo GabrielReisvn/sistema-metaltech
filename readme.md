@@ -68,11 +68,11 @@ src/
 
 - `src/models/Usuario.js` — modelo de usuários. Métodos: `findAll`, `findByEmail`, `findById`, `create`, `update`, `delete`, `verificarSenha`. Usa `bcryptjs` para hashing e formata a saída (ex.: `ativo` → booleano).
 
-- `src/models/Produto.js` — modelo de produtos: campos como `nome`, `ingredientes`, `precos` (JSON). Implementa operações CRUD via os helpers do DB.
+- `src/models/Produto.js` — modelo de produtos: campos como `nome`, `peso, tempo de producao`, `precos` (JSON). Implementa operações CRUD via os helpers do DB.
 
 - `src/models/Cliente.js` — modelo de clientes: CRUD básico e busca por critérios (ex.: `busca` query em rotas).
 
-- `src/models/Pedido.js` — modelo de pedidos: cria pedidos com itens, calcula totais, expõe `create`, `findAll` (aceita filtros), `findById`, `updateStatus`, `delete`.
+- `src/models/OrdemProducao.js` — modelo de pedidos: cria pedidos com itens,  expõe `create`, `findAll` (aceita filtros), `findById`, `updateStatus`, `delete`.
 
 - `src/routes/index.js` — define as rotas REST principais (`/auth/login`, `/pizzas`, `/clientes`, `/pedidos`, `/usuarios`), aplica `auth` middleware nas rotas protegidas e checa `req.usuario.perfil` para permissões (ex.: somente `Administrador` pode criar/ler `/usuarios`).
 
@@ -113,7 +113,7 @@ Ações: exibir totais, filtros rápidos (período), navegar para páginas detal
 Permissões: visível para usuários autenticados; conteúdo pode variar por perfil.
 ```
 
-## **_Pedidos_** 📋
+## **_Ordem de produção_** 📋
 
 <img src="./img/pedido.png" width="500" height="auto">
 
@@ -123,29 +123,29 @@ Objetivo: gerenciar pedidos (criar, visualizar, atualizar status, cancelar).
 Elementos principais: lista/tabela de pedidos com cliente, itens, total e status; modal de criação/edição; botão para alterar status.
 
 Ações:
-  - Criar pedido: selecionar cliente (ou novo), adicionar itens (pizza, tamanho, qtd), aplicar taxa de entrega e forma de pagamento.
+  - Criar pedido: selecionar cliente (ou novo), adicionar itens (produto, qtd).
   - Editar/Atualizar status: mudar entre recebido → em_preparo → saiu_entrega → entregue / cancelar.
   - Excluir/cancelar pedido e ver histórico.
 
-Permissões: atendentes/garçons podem criar e atualizar; administradores têm controle completo.
+Permissões: lideres podem criar e atualizar; administradores têm controle completo.
 
 ```
 
-## **_Pizza_** 🍕
+## **_Produtos_** 🔩
 
 <img src="./img/pizza.png" width="500" height="auto">
 
 ``` 
-Objetivo: CRUD de pizzas e configuração de preços por tamanho.
+Objetivo: CRUD das peças e configuração de preços por tamanho.
 
-Elementos principais: tabela/lista de pizzas, botões criar/editar/excluir, modal com campos (nome, ingredientes, preços, disponibilidade).
+Elementos principais: tabela/lista de peças, botões criar/editar/excluir, modal com campos (nome, peso, preços, disponibilidade).
 
 Ações:
-  - Criar/Editar: informar nome, ingredientes, preços para pequenos/medios/grandes, categoria e disponibilidade.
-  - Deletar: remover pizza (com confirmação).
+  - Criar/Editar: informar nome, peso, preços , categoria e disponibilidade.
+  - Deletar: remover peça (com confirmação).
   - Buscar/filtrar por nome ou categoria.
 
-Permissões: geralmente restrito a usuários com permissão de gestão (administrador/gerente).
+Permissões: geralmente restrito a usuários com permissão de gestão (gerente).
 
 ```
 
@@ -164,6 +164,22 @@ Ações:
   - Remover ou marcar como inativo.
 
 Permissões: disponível para atendentes/garçons; administradores também.
+
+## **_Estoque/Materia Prima_** 👥
+
+<img src="./img/clientes.png" width="500" height="auto">
+
+``` 
+Objetivo: gerenciar cadastro do estoque (endereços, telefone, observações).
+
+Elementos principais: lista de materia prima, busca incremental, modal de criação/edição, botão deletar.
+
+Ações:
+  - gerenciar movimentações de materias primas utilizadas na produção
+    com entrada, saida e quantidade em kg 
+  - em caso de estoque baixo avisa para o gerente.
+
+Permissões: disponível para gerentes; 
 ```
 
 ## **_Usuários_** 🔐
@@ -180,6 +196,6 @@ Ações:
   - Ativar/Desativar usuário, editar permissões básicas.
   - Restrições: rota protegida por middleware JWT e autorização por perfil.
  
-Permissões: apenas administradores podem acessar e modificar.
+Permissões: apenas gerentes podem acessar e modificar.
 
 ```
